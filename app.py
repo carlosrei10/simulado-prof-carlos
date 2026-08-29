@@ -6,6 +6,7 @@ from google import genai
 from google.genai import types
 from google.genai.errors import APIError
 import streamlit as st
+import streamlit.components.v1 as components
 
 # -----------------------------------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA (Layout Centralizado para evitar esticar na horizontal)
@@ -254,6 +255,38 @@ st.markdown(
             justify-content: center;
             gap: 8px;
         }}
+
+        /* ESTILOS PARA AS RESPOSTAS (VERDE E VERMELHO) */
+        .resposta-opcao {{
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid {card_border};
+            font-weight: 600;
+            background-color: {card_bg};
+        }}
+        .resposta-correta {{
+            background-color: #D1FAE5 !important;
+            color: #065F46 !important;
+            border: 2px solid #10B981 !important;
+        }}
+        .resposta-errada {{
+            background-color: #FEE2E2 !important;
+            color: #991B1B !important;
+            border: 2px solid #EF4444 !important;
+        }}
+        .card-resultado {{
+            background-color: {card_bg};
+            border: 1px solid {card_border};
+            border-radius: 14px;
+            text-align: center;
+        }}
+        .metric-box {{
+            background-color: rgba(0,0,0,0.03);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid {card_border};
+        }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -284,6 +317,17 @@ def formatar_tempo(segundos):
     minutos = int(segundos // 60)
     segundos_restantes = int(segundos % 60)
     return f"{minutos:02d}:{segundos_restantes:02d}"
+
+
+def rolar_para_o_topo():
+    components.html(
+        """
+        <script>
+            window.parent.document.querySelector('.main').scrollTo({top: 0, behavior: 'smooth'});
+        </script>
+        """,
+        height=0,
+    )
 
 
 def limpar_e_formatar_texto(texto):
@@ -628,66 +672,69 @@ else:
         # SIMULADO INTERATIVO
         # ---------------------------------------------------------------------
         if st.session_state.funcao_selecionada == "online":
-            st.markdown('<div class="rotulo-seletor">✍️ Assunto Específico / Outro Tema:</div>', unsafe_allow_html=True)
-            topico_customizado = st.text_input(
-                "",
-                placeholder="Ex: ECA Digital, Lei 14.856/2024, Legislação Municipal, etc.",
-                label_visibility="collapsed"
-            )
-
-            col_qtd, col_nivel = st.columns(2)
-            with col_qtd:
-                st.markdown('<div class="rotulo-seletor">📊 Qtd (1-50):</div>', unsafe_allow_html=True)
-                qtd_questoes = st.number_input(
-                    "", min_value=1, max_value=50, value=10, step=1, label_visibility="collapsed"
+            if not st.session_state.questoes_online:
+                st.markdown('<div class="rotulo-seletor">✍️ Assunto Específico / Outro Tema:</div>', unsafe_allow_html=True)
+                topico_customizado = st.text_input(
+                    "",
+                    placeholder="Ex: ECA Digital, Lei 14.856/2024, Legislação Municipal, etc.",
+                    label_visibility="collapsed"
                 )
 
-            with col_nivel:
-                st.markdown('<div class="rotulo-seletor">📊 Dificuldade (1-5):</div>', unsafe_allow_html=True)
-                nivel_dificuldade = st.slider("", min_value=1, max_value=5, value=5, label_visibility="collapsed")
-
-            topico_final = topico_customizado.strip() if topico_customizado.strip() else topico_sel
-
-            info_niveis = {
-                1: ("😊", "FÁCIL", "Nível 1: Conceitual & Direto", "#10B981"),
-                2: ("🙂", "TRANQUILO", "Nível 2: Aplicação Básica", "#3B82F6"),
-                3: ("😐", "MODERADO", "Nível 3: Padrão Acadêmico", "#F59E0B"),
-                4: ("😰", "DESAFIADOR", "Nível 4: Casos Práticos & Pegadinhas", "#EF4444"),
-                5: ("💀", "SOFRIMENTO (CONCURSO / MAGISTÉRIO)", "Nível 5: Prova de Concurso Público Exigente", "#8B5CF6"),
-            }
-            emoji, titulo_nivel, desc_nivel, cor_nivel = info_niveis[nivel_dificuldade]
-            
-            st.markdown(
-                f'''
-                <div class="card-dificuldade" style="background-color: {cor_nivel};">
-                    <span>{emoji}</span>
-                    <div>
-                        <span>{titulo_nivel}: {desc_nivel}</span>
-                    </div>
-                </div>
-                ''',
-                unsafe_allow_html=True,
-            )
-
-            st.write("")
-            if st.button("🚀 Iniciar Simulado Instantâneo", type="primary", use_container_width=True):
-                st.session_state.questoes_online = []
-                st.session_state.respostas_usuario = {}
-                st.session_state.indice_questao = 0
-                st.session_state.qtd_total_questoes = qtd_questoes
-                st.session_state.tempo_inicio = time.time()
-                st.session_state.simulado_concluido = False
-
-                with st.spinner(f"⚡ Montando simulado com {qtd_questoes} questões sobre '{topico_final}' (Nível {nivel_dificuldade})..."):
-                    questoes = gerar_lote_questoes(
-                        materia_sel, topico_final, st.session_state.etapa_ensino, qtd_questoes, nivel_dificuldade
+                col_qtd, col_nivel = st.columns(2)
+                with col_qtd:
+                    st.markdown('<div class="rotulo-seletor">📊 Qtd (1-50):</div>', unsafe_allow_html=True)
+                    qtd_questoes = st.number_input(
+                        "", min_value=1, max_value=50, value=10, step=1, label_visibility="collapsed"
                     )
-                    if questoes:
-                        st.session_state.questoes_online = questoes
-                        st.rerun()
+
+                with col_nivel:
+                    st.markdown('<div class="rotulo-seletor">📊 Dificuldade (1-5):</div>', unsafe_allow_html=True)
+                    nivel_dificuldade = st.slider("", min_value=1, max_value=5, value=5, label_visibility="collapsed")
+
+                topico_final = topico_customizado.strip() if topico_customizado.strip() else topico_sel
+
+                info_niveis = {
+                    1: ("😊", "FÁCIL", "Nível 1: Conceitual & Direto", "#10B981"),
+                    2: ("🙂", "TRANQUILO", "Nível 2: Aplicação Básica", "#3B82F6"),
+                    3: ("😐", "MODERADO", "Nível 3: Padrão Acadêmico", "#F59E0B"),
+                    4: ("😰", "DESAFIADOR", "Nível 4: Casos Práticos & Pegadinhas", "#EF4444"),
+                    5: ("💀", "SOFRIMENTO (CONCURSO / MAGISTÉRIO)", "Nível 5: Prova de Concurso Público Exigente", "#8B5CF6"),
+                }
+                emoji, titulo_nivel, desc_nivel, cor_nivel = info_niveis[nivel_dificuldade]
+                
+                st.markdown(
+                    f'''
+                    <div class="card-dificuldade" style="background-color: {cor_nivel};">
+                        <span>{emoji}</span>
+                        <div>
+                            <span>{titulo_nivel}: {desc_nivel}</span>
+                        </div>
+                    </div>
+                    ''',
+                    unsafe_allow_html=True,
+                )
+
+                st.write("")
+                if st.button("🚀 Iniciar Simulado Instantâneo", type="primary", use_container_width=True):
+                    st.session_state.questoes_online = []
+                    st.session_state.respostas_usuario = {}
+                    st.session_state.indice_questao = 0
+                    st.session_state.qtd_total_questoes = qtd_questoes
+                    st.session_state.simulado_concluido = False
+
+                    with st.spinner(f"⚡ Montando simulado com {qtd_questoes} questões sobre '{topico_final}' (Nível {nivel_dificuldade})..."):
+                        questoes = gerar_lote_questoes(
+                            materia_sel, topico_final, st.session_state.etapa_ensino, qtd_questoes, nivel_dificuldade
+                        )
+                        if questoes:
+                            st.session_state.questoes_online = questoes
+                            # INICIA O CRONÔMETRO SOMENTE APÓS A PRIMEIRA QUESTÃO CARREGAR DE FATO
+                            st.session_state.tempo_inicio = time.time()
+                            st.rerun()
 
             # TELA DE RESULTADO FINAL
-            if st.session_state.simulado_concluido:
+            elif st.session_state.simulado_concluido:
+                rolar_para_o_topo()
                 total_questoes = len(st.session_state.questoes_online)
                 acertos = 0
                 for i, q in enumerate(st.session_state.questoes_online):
@@ -726,6 +773,7 @@ else:
                     unsafe_allow_html=True,
                 )
 
+                st.write("")
                 col_res1, col_res2 = st.columns(2)
                 with col_res1:
                     if st.button("🔄 REINICIAR SIMULADO", key="btn_reiniciar_simulado", use_container_width=True):
@@ -742,114 +790,77 @@ else:
                         st.rerun()
 
             # FLUXO DE QUESTÕES ON-LINE
-            elif st.session_state.questoes_online:
+            else:
+                rolar_para_o_topo()
                 idx = st.session_state.indice_questao
-                total = len(st.session_state.questoes_online)
-                q = st.session_state.questoes_online[idx]
+                questao_atual = st.session_state.questoes_online[idx]
+                total_q = len(st.session_state.questoes_online)
 
+                # BARRA DE PROGRESSO E CRONÔMETRO
                 tempo_decorrido = time.time() - st.session_state.tempo_inicio if st.session_state.tempo_inicio else 0
-                tempo_str = formatar_tempo(tempo_decorrido)
+                tempo_fmt = formatar_tempo(tempo_decorrido)
 
                 st.markdown(
                     f"""
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3 style="color: {btn_bg}; font-weight: 800; margin: 0; font-size: 1.1rem;">📝 Questão {idx + 1} de {total}</h3>
-                        <div class="cronometro-box" style="font-size: 0.9rem; padding: 4px 10px;">⏱️ Tempo: {tempo_str}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 800; font-size: 1rem;">QUESTÃO {idx + 1} DE {total_q}</span>
+                        <span style="font-weight: 700; font-size: 0.95rem; color: #EF4444;">⏱️ {tempo_fmt}</span>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
+                st.progress((idx + 1) / total_q)
 
-                st.markdown(
-                    f'<div class="enunciado-grande">{limpar_e_formatar_texto(q["enunciado"])}</div>',
-                    unsafe_allow_html=True,
+                # ENUNCIADO
+                enunciado = limpar_e_formatar_texto(questao_atual.get("enunciado", ""))
+                st.markdown(f'<div class="enunciado-grande">{enunciado}</div>', unsafe_allow_html=True)
+
+                # SELEÇÃO DE ALTERNATIVA
+                resposta_salva = st.session_state.respostas_usuario.get(idx, None)
+                alternativas = questao_atual.get("alternativas", {})
+                opcao_correta = questao_atual.get("correta", "").lower()
+
+                opcao_escolhida = st.radio(
+                    "Escolha a alternativa correta:",
+                    options=list(alternativas.keys()),
+                    format_func=lambda x: f"{x.upper()}) {limpar_e_formatar_texto(alternativas[x])}",
+                    index=list(alternativas.keys()).index(resposta_salva) if resposta_salva in alternativas else None,
+                    key=f"radio_q_{idx}"
                 )
 
-                for letra, texto in q["alternativas"].items():
-                    chave_btn = f"q_{idx}_{letra}"
-                    label_opcao = f"{letra.upper()}) {limpar_e_formatar_texto(texto)}"
+                if opcao_escolhida:
+                    st.session_state.respostas_usuario[idx] = opcao_escolhida
 
-                    if st.button(label_opcao, key=chave_btn, use_container_width=True):
-                        st.session_state.respostas_usuario[idx] = letra.lower()
-                        st.rerun()
-
-                if idx in st.session_state.respostas_usuario:
-                    resposta_feita = st.session_state.respostas_usuario[idx]
-                    letra_correta = q["correta"].lower()
-
-                    if resposta_feita == letra_correta:
-                        st.success(f"✅ **CORRETO!** A alternativa ({letra_correta.upper()}) é a resposta certa.")
+                # FEEDBACK VERDE / VERMELHO
+                if resposta_salva:
+                    if resposta_salva == opcao_correta:
+                        st.success(f"✅ **Resposta Correta!** ({opcao_correta.upper()})")
                     else:
-                        st.error(
-                            f"❌ **ERRADO!** Você marcou ({resposta_feita.upper()}), mas a alternativa correta é ({letra_correta.upper()})."
-                        )
+                        st.error(f"❌ **Você errou.** A resposta correta era a opção **{opcao_correta.upper()}**.")
 
-                    st.info(f"💡 **Explicação:** {limpar_e_formatar_texto(q['explicacao'])}")
+                    explicacao = questao_atual.get("explicacao", "")
+                    if explicacao:
+                        st.info(f"💡 **Explicação:** {limpar_e_formatar_texto(explicacao)}")
 
-                st.divider()
+                st.write("")
 
-                nav_col1, nav_col2 = st.columns(2)
-
-                with nav_col1:
+                # NAVEGAÇÃO ENTRE QUESTÕES (CORRIGIDO PARA "QUESTÃO")
+                col_voltar, col_avancar = st.columns(2)
+                with col_voltar:
                     if idx > 0:
-                        if st.button("⬅️ VOLTAR QUESTAÇÃO", key="btn_nav_anterior", use_container_width=True):
+                        if st.button("⬅️ VOLTAR QUESTÃO", use_container_width=True):
                             st.session_state.indice_questao -= 1
                             st.rerun()
 
-                with nav_col2:
-                    if idx < total - 1:
-                        if st.button("AVANÇAR QUESTAÇÃO ➡️", key="btn_nav_proxima", use_container_width=True):
+                with col_avancar:
+                    if idx < total_q - 1:
+                        if st.button("AVANÇAR QUESTÃO ➡️", use_container_width=True):
                             st.session_state.indice_questao += 1
                             st.rerun()
                     else:
-                        if st.button("FINALIZAR SIMULADO 🏆", key="btn_nav_proxima", use_container_width=True):
+                        if st.button("🏁 FINALIZAR SIMULADO", type="primary", use_container_width=True):
                             st.session_state.simulado_concluido = True
                             st.rerun()
 
-        # ---------------------------------------------------------------------
-        # GERAR PDF
-        # ---------------------------------------------------------------------
-        elif st.session_state.funcao_selecionada == "pdf":
-            topico_final = topico_customizado.strip() if topico_customizado.strip() else topico_sel
-            if st.button("📄 Gerar Simulado PDF", type="primary", use_container_width=True):
-                with st.spinner("Gerando versão para impressão..."):
-                    try:
-                        prompt = f"Gere uma prova de {materia_sel} focando ESTRITAMENTE em '{topico_final}' ({st.session_state.etapa_ensino}) em 10 questões de nível concurso público com gabarito no final."
-                        res = client.models.generate_content(model=MODEL_NAME, contents=prompt)
-                        st.markdown(
-                            f'<div style="font-family: serif; font-size: 0.95rem; line-height: 1.5; color: {text_color};">'
-                            + limpar_e_formatar_texto(res.text).replace("\n", "<br>")
-                            + "</div>",
-                            unsafe_allow_html=True,
-                        )
-                    except Exception as e:
-                        st.error("⚠️ Cota de chamadas temporariamente excedida. Aguarde alguns instantes e tente novamente.")
-
-        # ---------------------------------------------------------------------
-        # BANCO DE PROVAS DE CONCURSOS
-        # ---------------------------------------------------------------------
-        elif st.session_state.funcao_selecionada == "concursos":
-            topico_final = topico_customizado.strip() if topico_customizado.strip() else topico_sel
-            banca = st.selectbox("Selecione a Banca:", ["Cebraspe", "FGV", "Vunesp", "FCC", "IBFC", "ENEM"])
-            if st.button("🎯 Gerar Questões de Concurso", type="primary", use_container_width=True):
-                with st.spinner("Buscando estilo da banca..."):
-                    try:
-                        prompt = f"Gere 5 questões inéditas no estilo exigido pela banca {banca} focando EXCLUSIVAMENTE sobre '{topico_final}' da matéria {materia_sel} para nível {st.session_state.etapa_ensino} com gabarito comentado."
-                        res = client.models.generate_content(model=MODEL_NAME, contents=prompt)
-                        st.markdown(limpar_e_formatar_texto(res.text))
-                    except Exception as e:
-                        st.error("⚠️ Cota de chamadas temporariamente excedida. Aguarde alguns instantes e tente novamente.")
-
-        # ---------------------------------------------------------------------
-        # BIBLIOTECA TEÓRICA
-        # ---------------------------------------------------------------------
-        elif st.session_state.funcao_selecionada == "conteudos":
-            topico_final = topico_customizado.strip() if topico_customizado.strip() else topico_sel
-            if st.button("📖 Carregar Conteúdo Teórico", type="primary", use_container_width=True):
-                with st.spinner("Carregando resumo teórico detalhado..."):
-                    try:
-                        prompt = f"Crie um resumo teórico e didático completo focando EXCLUSIVAMENTE sobre '{topico_final}' da matéria {materia_sel} ({st.session_state.etapa_ensino}), incluindo conceitos fundamentais e exemplos práticos para concursos."
-                        res = client.models.generate_content(model=MODEL_NAME, contents=prompt)
-                        st.markdown(limpar_e_formatar_texto(res.text))
-                    except Exception as e:
-                        st.error("⚠️ Cota de chamadas temporariamente excedida. Aguarde alguns instantes e tente novamente.")
+        elif st.session_state.funcao_selecionada in ["pdf", "conteudos", "concursos"]:
+            st.info("📌 Módulo em desenvolvimento para esta etapa.")
