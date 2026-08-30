@@ -34,7 +34,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # -----------------------------------------------------------------------------
-# ESTILIZAÇÃO CSS GLOBAL (CAIXAS COM FUNDO BRANCO, BORDAS SÓLIDAS E CONTRASTE)
+# ESTILIZAÇÃO CSS GLOBAL (CORREÇÃO DE OPACIDADE E TEXTO AO CLICAR/FOCO)
 # -----------------------------------------------------------------------------
 bg_body = "#F0F4F8"
 text_color = "#0F172A"
@@ -121,7 +121,7 @@ st.markdown(
             display: inline-block;
         }}
 
-        /* CORREÇÃO DAS CAIXAS DE SELEÇÃO E CAMPOS DE TEXTO (RETIRAR EFEITO DE PALAVRAS VOANDO) */
+        /* CAMPOS DE SELEÇÃO E TEXTO */
         div[data-baseweb="select"], .stSelectbox > div > div {{
             background-color: #FFFFFF !important;
             border: 2px solid #CBD5E1 !important;
@@ -146,11 +146,6 @@ st.markdown(
             box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
         }}
 
-        div[data-baseweb="base-input"] {{
-            background-color: #FFFFFF !important;
-            border-radius: 10px !important;
-        }}
-
         .rotulo-seletor {{
             font-size: 0.95rem !important;
             font-weight: 800 !important;
@@ -162,12 +157,12 @@ st.markdown(
             white-space: nowrap;
         }}
 
-        /* BOTÕES PADRÃO DO SISTEMA */
+        /* BOTÕES GERAIS E CORREÇÃO DE OPACIDADE AO CLICAR/FOCO */
         div.stButton > button {{
             font-size: 0.95rem;
             padding: 12px 14px;
             background-color: {btn_bg};
-            color: white !important;
+            color: #FFFFFF !important;
             border-radius: 10px;
             border: none;
             font-weight: 700;
@@ -181,11 +176,22 @@ st.markdown(
             opacity: 1 !important;
         }}
 
-        div.stButton > button p {{
-            text-align: center;
-            width: 100%;
-            color: inherit !important;
+        div.stButton > button:hover, 
+        div.stButton > button:focus, 
+        div.stButton > button:active {{
             opacity: 1 !important;
+            color: #FFFFFF !important;
+            background-color: #1D4ED8 !important;
+            border-color: transparent !important;
+            outline: none !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+        }}
+
+        div.stButton > button p, 
+        div.stButton > button span {{
+            color: #FFFFFF !important;
+            opacity: 1 !important;
+            font-weight: 700 !important;
         }}
 
         /* CARDS LANDING PAGE */
@@ -423,7 +429,6 @@ def gerar_lote_questoes(materia, topico, etapa, quantidade, nivel):
 # ESTRUTURA DE CONTEÚDOS (EM ORDEM ALFABÉTICA)
 # -----------------------------------------------------------------------------
 
-# 1. EDUCAÇÃO BÁSICA - DISCIPLINAS DA EDUCAÇÃO BÁSICA (ORDEM ALFABÉTICA)
 CONTEUDOS_EDUCACAO_BASICA = {
     "Artes": {
         "Artes Visuais e História da Arte": [
@@ -549,7 +554,6 @@ CONTEUDOS_EDUCACAO_BASICA = {
     },
 }
 
-# 2. ENSINO SUPERIOR - DISCIPLINAS DO MAGISTÉRIO / CONCURSOS PARA PROFESSOR (ORDEM ALFABÉTICA)
 CONTEUDOS_ENSINO_SUPERIOR = {
     "Conhecimentos Pedagógicos": {
         "Didática e Prática de Ensino": [
@@ -687,10 +691,8 @@ if st.session_state.etapa_ensino is None:
 # PAINEL PRINCIPAL DE ESTUDOS & SIMULADO
 # -----------------------------------------------------------------------------
 else:
-    # SE O SIMULADO ESTIVER EM ANDAMENTO OU CONCLUÍDO
     if st.session_state.questoes_online or st.session_state.simulado_concluido:
 
-        # TELA DE RESULTADO FINAL
         if st.session_state.simulado_concluido:
             rolar_para_o_topo()
             total_questoes = len(st.session_state.questoes_online)
@@ -747,7 +749,6 @@ else:
                     st.session_state.indice_questao = total_questoes - 1
                     st.rerun()
 
-        # FLUXO DE EXIBIÇÃO DA QUESTÃO
         else:
             rolar_para_o_topo()
             idx = st.session_state.indice_questao
@@ -798,14 +799,19 @@ else:
                         font-size: 0.95rem !important;
                         box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
                     }}
-                    div.stButton > button[key="{key_btn}"] p {{
+                    div.stButton > button[key="{key_btn}"]:hover,
+                    div.stButton > button[key="{key_btn}"]:focus,
+                    div.stButton > button[key="{key_btn}"]:active {{
+                        border-color: #2563EB !important;
+                        background-color: #F8FAFC !important;
+                        color: #0F172A !important;
+                        opacity: 1 !important;
+                    }}
+                    div.stButton > button[key="{key_btn}"] p,
+                    div.stButton > button[key="{key_btn}"] span {{
                         color: #0F172A !important;
                         opacity: 1 !important;
                         font-weight: 700 !important;
-                    }}
-                    div.stButton > button[key="{key_btn}"]:hover {{
-                        border-color: #2563EB !important;
-                        background-color: #F8FAFC !important;
                     }}
                     """
                 else:
@@ -823,7 +829,8 @@ else:
                             font-weight: 800 !important;
                             font-size: 0.95rem !important;
                         }}
-                        div.stButton > button[key="{key_btn}"] p {{
+                        div.stButton > button[key="{key_btn}"] p,
+                        div.stButton > button[key="{key_btn}"] span {{
                             color: #064E3B !important;
                             opacity: 1 !important;
                             font-weight: 800 !important;
@@ -843,7 +850,8 @@ else:
                             font-weight: 800 !important;
                             font-size: 0.95rem !important;
                         }}
-                        div.stButton > button[key="{key_btn}"] p {{
+                        div.stButton > button[key="{key_btn}"] p,
+                        div.stButton > button[key="{key_btn}"] span {{
                             color: #7F1D1D !important;
                             opacity: 1 !important;
                             font-weight: 800 !important;
@@ -863,7 +871,8 @@ else:
                             font-weight: 600 !important;
                             font-size: 0.95rem !important;
                         }}
-                        div.stButton > button[key="{key_btn}"] p {{
+                        div.stButton > button[key="{key_btn}"] p,
+                        div.stButton > button[key="{key_btn}"] span {{
                             color: #0F172A !important;
                             opacity: 1 !important;
                             font-weight: 600 !important;
@@ -920,7 +929,6 @@ else:
                         st.session_state.simulado_concluido = True
                         st.rerun()
 
-    # TELA DE CONFIGURAÇÃO DO SIMULADO (ANTES DE INICIAR)
     else:
         st.markdown(
             f"""
@@ -1004,16 +1012,13 @@ else:
                     st.rerun()
 
         else:
-            # SELEÇÃO DA ESTRUTURA CONFORME A ETAPA DE ENSINO
             if st.session_state.etapa_ensino == "Educação Básica":
                 base_dados = CONTEUDOS_EDUCACAO_BASICA
             else:
                 base_dados = CONTEUDOS_ENSINO_SUPERIOR
 
-            # RÓTULO FIXO COMO "DISCIPLINA"
             st.markdown('<div class="rotulo-seletor">📚 Disciplina:</div>', unsafe_allow_html=True)
             
-            # SELEÇÃO DAS DISCIPLINAS EM ORDEM ALFABÉTICA
             lista_disciplinas = sorted(list(base_dados.keys()))
             materia_sel = st.selectbox("", lista_disciplinas, label_visibility="collapsed")
 
@@ -1092,6 +1097,5 @@ else:
             elif st.session_state.funcao_selecionada in ["pdf", "conteudos", "concursos"]:
                 st.info("📌 Módulo em desenvolvimento para esta etapa.")
 
-    # --- BOTÕES DE NAVEGAÇÃO NO RODAPÉ ---
     st.divider()
     renderizar_botoes_navegacao("rodape")
