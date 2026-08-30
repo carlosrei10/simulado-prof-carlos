@@ -34,7 +34,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # -----------------------------------------------------------------------------
-# ESTILIZAÇÃO CSS GLOBAL (CORREÇÃO DE BORDAS, CAIXAS E VISIBILIDADE DE TEXTO)
+# ESTILIZAÇÃO CSS GLOBAL (CAIXAS COM FUNDO BRANCO, BORDAS SÓLIDAS E CONTRASTE)
 # -----------------------------------------------------------------------------
 bg_body = "#F0F4F8"
 text_color = "#0F172A"
@@ -121,13 +121,13 @@ st.markdown(
             display: inline-block;
         }}
 
-        /* CORREÇÃO DAS CAIXAS DE SELEÇÃO E CAMPOS DE TEXTO */
-        div[data-baseweb="select"] > div {{
+        /* CORREÇÃO DAS CAIXAS DE SELEÇÃO E CAMPOS DE TEXTO (RETIRAR EFEITO DE PALAVRAS VOANDO) */
+        div[data-baseweb="select"], .stSelectbox > div > div {{
             background-color: #FFFFFF !important;
             border: 2px solid #CBD5E1 !important;
             border-radius: 10px !important;
             color: #0F172A !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
         }}
 
         div[data-baseweb="select"] * {{
@@ -136,13 +136,14 @@ st.markdown(
             color: #0F172A !important;
         }}
 
-        input[data-baseweb="input"], div[data-baseweb="input"] {{
+        input[data-baseweb="input"], div[data-baseweb="input"], .stTextInput > div > div {{
             background-color: #FFFFFF !important;
             border: 2px solid #CBD5E1 !important;
             border-radius: 10px !important;
             color: #0F172A !important;
             font-size: 0.95rem !important;
             font-weight: 600 !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
         }}
 
         div[data-baseweb="base-input"] {{
@@ -362,16 +363,16 @@ def gerar_lote_questoes(materia, topico, etapa, quantidade, nivel):
         2: "Nível 2 (Tranquilo / Prático): Questões simples com cenários práticos do dia a dia.",
         3: "Nível 3 (Moderado / Acadêmico): Questões no padrão tradicional de exames e provas escolares/acadêmicas.",
         4: "Nível 4 (Desafiador / Análise): Questões complexas com casos práticos e pegadinhas.",
-        5: "Nível 5 (Nível Concurso Público / Professor): Questões no estilo exato de bancas examinadoras de Concursos Públicos para Carreiras da Educação e Magistério (Cebraspe, FGV, Vunesp, FCC). Altamente exigente.",
+        5: "Nível 5 (Nível Concurso Público / Professor): Questões no estilo exato de bancas examinadoras de Concursos Públicos (Cebraspe, FGV, Vunesp, FCC). Altamente exigente.",
     }
 
     system_instruction = (
-        "Você é um renomado examinador de concursos públicos. "
+        "Você é um renomado examinador de provas e concursos públicos do Magistério. "
         "Sua regra absoluta é respeitar estritamente o tema solicitado e o nível de dificuldade exigido."
     )
 
     prompt_json = (
-        f"Gere um array com exatamente {quantidade} questões inéditas para a matéria {materia} ({etapa}).\n\n"
+        f"Gere um array com exatamente {quantidade} questões inéditas para a disciplina {materia} ({etapa}).\n\n"
         f"🎯 TEMA EXCLUSIVO: \"{topico}\"\n"
         f"📊 DIFICULDADE EXIGIDA: {descricoes_nivel[nivel]}\n\n"
         "REGRAS DE FORMATAÇÃO:\n"
@@ -419,9 +420,137 @@ def gerar_lote_questoes(materia, topico, etapa, quantidade, nivel):
 
 
 # -----------------------------------------------------------------------------
-# ESTRUTURA DE CONTEÚDOS
+# ESTRUTURA DE CONTEÚDOS (EM ORDEM ALFABÉTICA)
 # -----------------------------------------------------------------------------
-ESTRUTURA_CONTEUDOS = {
+
+# 1. EDUCAÇÃO BÁSICA - DISCIPLINAS DA EDUCAÇÃO BÁSICA (ORDEM ALFABÉTICA)
+CONTEUDOS_EDUCACAO_BASICA = {
+    "Artes": {
+        "Artes Visuais e História da Arte": [
+            "Elementos da Linguagem Visual (Ponto, Linha, Forma, Cor)",
+            "Arte Pré-Histórica e Antiga",
+            "Movimentos Artísticos Modernos e Contemporâneos",
+            "Arte Brasileira e Patrimônio Cultural",
+        ]
+    },
+    "Biologia": {
+        "Citologia e Genética": [
+            "Estrutura e Função Celular",
+            "Divisão Celular (Mitose e Meiose)",
+            "Leis de Mendel e Genética Humana",
+            "Biotecnologia e Engenharia Genética",
+        ],
+        "Ecologia e Evolução": [
+            "Cadeias e Teias Alimentares",
+            "Relações Ecológicas e Biomas Brasileiros",
+            "Teorias Evolutivas (Lamarckismo, Darwinismo, Neodarwinismo)",
+        ],
+    },
+    "Ciências": {
+        "Corpo Humano e Meio Ambiente": [
+            "Sistemas do Corpo Humano e Saúde",
+            "Matéria, Energia e Misturas",
+            "Terra, Universo e Sistema Solar",
+            "Preservação Ambiental e Sustentabilidade",
+        ]
+    },
+    "Educação Física": {
+        "Cultura Corporal do Movimento": [
+            "Jogos, Esportes e Brincadeiras",
+            "Ginástica, Dança e Lutas",
+            "Saúde, Anatomia e Qualidade de Vida",
+        ]
+    },
+    "Filosofia": {
+        "História do Pensamento Filosófico": [
+            "Filosofia Antiga (Sócrates, Platão, Aristóteles)",
+            "Filosofia Política e Ética",
+            "Teoria do Conhecimento (Racionalismo e Empirismo)",
+            "Filosofia Contemporânea",
+        ]
+    },
+    "Física": {
+        "Mecânica e Termodinâmica": [
+            "Cinemática (Movimento Uniforme e Variado)",
+            "Leis de Newton e Dinâmica",
+            "Trabalho, Energia e Potência",
+            "Termologia e Calorimetria",
+        ],
+        "Eletromagnetismo e Óptica": [
+            "Eletrostática e Circuitos Elétricos",
+            "Ondulatória e Fenômenos Ondulatórios",
+            "Óptica Geométrica (Lentes e Espelhos)",
+        ],
+    },
+    "Geografia": {
+        "Geografia Física e Humana": [
+            "Cartografia, Fuso Horário e Orientação",
+            "Relevo, Clima e Hidrografia",
+            "Geografia Urbana e Agrária",
+            "Geopolítica e Globalização",
+            "Geografia do Brasil",
+        ]
+    },
+    "História": {
+        "História Geral e do Brasil": [
+            "Antiguidade Clássica (Grécia e Roma)",
+            "Idade Média e Feudalismo",
+            "Brasil Colônia, Império e República",
+            "Primeira e Segunda Guerra Mundial",
+            "Guerra Fria e Mundo Contemporâneo",
+        ]
+    },
+    "Língua Espanhola": {
+        "Linguagem e Compreensão": [
+            "Compreensão e Interpretação Textual em Espanhol",
+            "Gramática, Pronomes e Conectores",
+            "Falsos Amigos (Heterosemânticos)",
+        ]
+    },
+    "Língua Inglesa": {
+        "Linguagem e Compreensão": [
+            "Reading Comprehension & Vocabulary",
+            "Grammar & Verb Tenses",
+            "Linking Words & Textual Cohesion",
+        ]
+    },
+    "Língua Portuguesa": {
+        "Gramática e Interpretação": [
+            "Compreensão e Interpretação de Textos",
+            "Ortografia, Acentuação e Pontuação",
+            "Classes de Palavras e Sintaxe",
+            "Concordância, Regência e Crase",
+            "Literatura Brasileira e Portuguesa",
+        ]
+    },
+    "Matemática": {
+        "Álgebra, Geometria e Estatística": [
+            "Operações Fundamentais e Frações",
+            "Equações de 1º e 2º Graus e Sistemas",
+            "Porcentagem, Regra de Três e Juros",
+            "Geometria Plana e Espacial",
+            "Funções, Estatística e Probabilidade",
+        ]
+    },
+    "Química": {
+        "Química Geral e Orgânica": [
+            "Estrutura Atômica e Tabela Periódica",
+            "Ligações Químicas e Funções Inorgânicas",
+            "Estequiometria e Soluções",
+            "Química Orgânica (Cadeias e Funções)",
+        ]
+    },
+    "Sociologia": {
+        "Sociedade e Indivíduo": [
+            "Clássicos da Sociologia (Durkheim, Marx, Weber)",
+            "Cultura, Identidade e Socialização",
+            "Trabalho, Desigualdade e Cidadania",
+        ]
+    },
+}
+
+# 2. ENSINO SUPERIOR - DISCIPLINAS DO MAGISTÉRIO / CONCURSOS PARA PROFESSOR (ORDEM ALFABÉTICA)
+CONTEUDOS_ENSINO_SUPERIOR = {
     "Conhecimentos Pedagógicos": {
         "Didática e Prática de Ensino": [
             "Tendências Pedagógicas (Liberal, Progressista, Libertadora)",
@@ -466,6 +595,22 @@ ESTRUTURA_CONTEUDOS = {
             "Diretrizes para a Educação das Relações Étnico-Raciais",
         ],
     },
+    "Língua Portuguesa para Concurso": {
+        "Gramática e Ortografia": [
+            "Nova Ortografia e Acentuação Gráfica",
+            "Classes de Palavras (Substantivo, Adjetivo, Verbo, etc.)",
+            "Sintaxe da Oração e do Período",
+            "Concordância Verbal e Nominal",
+            "Regência Verbal, Nominal e Emprego da Crase",
+            "Pontuação e Seus Usos Expressivos",
+        ],
+        "Interpretação e Coesão": [
+            "Compreensão e Interpretação de Textos",
+            "Mecanismos de Coesão e Coerência Textual",
+            "Tipologia e Gêneros Textuais",
+            "Figuras de Linguagem e Funções da Linguagem",
+        ],
+    },
     "Raciocínio Lógico e Matemática": {
         "Lógica Proposicional": [
             "Proposições Simples e Compostas",
@@ -481,22 +626,6 @@ ESTRUTURA_CONTEUDOS = {
             "Análise Combinatória (Arranjo, Permutação e Combinação)",
             "Probabilidade Simples e Condicional",
             "Porcentagem, Juros Simples e Regra de Três",
-        ],
-    },
-    "Língua Portuguesa": {
-        "Gramática e Ortografia": [
-            "Nova Ortografia e Acentuação Gráfica",
-            "Classes de Palavras (Substantivo, Adjetivo, Verbo, etc.)",
-            "Sintaxe da Oração e do Período",
-            "Concordância Verbal e Nominal",
-            "Regência Verbal, Nominal e Emprego da Crase",
-            "Pontuação e Seus Usos Expressivos",
-        ],
-        "Interpretação e Coesão": [
-            "Compreensão e Interpretação de Textos",
-            "Mecanismos de Coesão e Coerência Textual",
-            "Tipologia e Gêneros Textuais",
-            "Figuras de Linguagem e Funções da Linguagem",
         ],
     },
 }
@@ -529,7 +658,7 @@ if st.session_state.etapa_ensino is None:
             f"""
             <div class="card-basica-topo">
                 <div style="font-size: 1.2rem; font-weight: 800; color: {btn_bg}; margin-bottom: 4px;">🏫 EDUCAÇÃO BÁSICA</div>
-                <div style="font-size: 0.85rem; color: {text_color}; opacity: 0.85; margin-bottom: 8px;">Ensino Fundamental e Médio • ENEM • Concursos</div>
+                <div style="font-size: 0.85rem; color: {text_color}; opacity: 0.85; margin-bottom: 8px;">Ensino Fundamental e Médio • ENEM • Provas Escolares</div>
                 <div style="font-size: 1.4rem;">📐 📖 🎨 🧪 🌍</div>
             </div>
             """,
@@ -544,8 +673,8 @@ if st.session_state.etapa_ensino is None:
             f"""
             <div class="card-superior-topo">
                 <div style="font-size: 1.2rem; font-weight: 800; color: {btn_bg}; margin-bottom: 4px;">🎓 ENSINO SUPERIOR</div>
-                <div style="font-size: 0.85rem; color: {text_color}; opacity: 0.85; margin-bottom: 8px;">Graduação • Concursos de Nível Superior & Magistério</div>
-                <div style="font-size: 1.4rem;">⚖️ 🩺 💻 💼 🏗️</div>
+                <div style="font-size: 0.85rem; color: {text_color}; opacity: 0.85; margin-bottom: 8px;">Concursos de Magistério & Nível Superior</div>
+                <div style="font-size: 1.4rem;">📜 🧠 📖 🔢</div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -560,7 +689,7 @@ if st.session_state.etapa_ensino is None:
 else:
     # SE O SIMULADO ESTIVER EM ANDAMENTO OU CONCLUÍDO
     if st.session_state.questoes_online or st.session_state.simulado_concluido:
-        
+
         # TELA DE RESULTADO FINAL
         if st.session_state.simulado_concluido:
             rolar_para_o_topo()
@@ -569,7 +698,7 @@ else:
             for i, q in enumerate(st.session_state.questoes_online):
                 if st.session_state.respostas_usuario.get(i) == q["correta"].lower():
                     acertos += 1
-            
+
             erros = total_questoes - acertos
             porcentagem = (acertos / total_questoes * 100) if total_questoes > 0 else 0
             tempo_total = time.time() - st.session_state.tempo_inicio if st.session_state.tempo_inicio else 0
@@ -611,7 +740,7 @@ else:
                     st.session_state.tempo_inicio = time.time()
                     st.session_state.simulado_concluido = False
                     st.rerun()
-            
+
             with col_res2:
                 if st.button("⬅️ REVISAR QUESTÕES", key="btn_nav_anterior", use_container_width=True):
                     st.session_state.simulado_concluido = False
@@ -648,7 +777,6 @@ else:
             alternativas = questao_atual.get("alternativas", {})
             opcao_correta = questao_atual.get("correta", "").lower()
 
-            # REGRA ESTRITA DE VISIBILIDADE DAS ALTERNATIVAS
             css_botoes_dinamicos = ""
 
             for chave in sorted(alternativas.keys()):
@@ -656,7 +784,6 @@ else:
                 key_btn = f"btn_alt_{idx}_{letra}"
 
                 if not resposta_salva:
-                    # Antes de responder: Fundo branco puro, texto preto forte (#0F172A), borda cinza bem visível
                     css_botoes_dinamicos += f"""
                     div.stButton > button[key="{key_btn}"] {{
                         background-color: #FFFFFF !important;
@@ -682,9 +809,7 @@ else:
                     }}
                     """
                 else:
-                    # Após responder: Força opacidade 100% no container e na fonte
                     if letra == opcao_correta:
-                        # Resposta Correta: Fundo verde suave, texto escuro de altíssimo contraste
                         css_botoes_dinamicos += f"""
                         div.stButton > button[key="{key_btn}"] {{
                             background-color: #D1FAE5 !important;
@@ -705,7 +830,6 @@ else:
                         }}
                         """
                     elif letra == resposta_salva:
-                        # Resposta Errada: Fundo vermelho suave, texto vermelho escuro
                         css_botoes_dinamicos += f"""
                         div.stButton > button[key="{key_btn}"] {{
                             background-color: #FEE2E2 !important;
@@ -726,7 +850,6 @@ else:
                         }}
                         """
                     else:
-                        # Outras Alternativas não marcadas: Mantêm texto preto nítido e caixa branca
                         css_botoes_dinamicos += f"""
                         div.stButton > button[key="{key_btn}"] {{
                             background-color: #FFFFFF !important;
@@ -749,7 +872,6 @@ else:
 
             st.markdown(f"<style>{css_botoes_dinamicos}</style>", unsafe_allow_html=True)
 
-            # RENDERIZAÇÃO DAS ALTERNATIVAS CLICÁVEIS
             for chave in sorted(alternativas.keys()):
                 letra = chave.lower()
                 texto_alt = limpar_e_formatar_texto(alternativas[chave])
@@ -768,7 +890,6 @@ else:
                     st.session_state.respostas_usuario[idx] = letra
                     st.rerun()
 
-            # FEEDBACK E EXPLICAÇÃO ABAIXO DAS ALTERNATIVAS
             if resposta_salva:
                 st.write("")
                 if resposta_salva == opcao_correta:
@@ -883,18 +1004,28 @@ else:
                     st.rerun()
 
         else:
-            st.markdown('<div class="rotulo-seletor">📚 Matéria:</div>', unsafe_allow_html=True)
-            materia_sel = st.selectbox("", list(ESTRUTURA_CONTEUDOS.keys()), label_visibility="collapsed")
+            # SELEÇÃO DA ESTRUTURA CONFORME A ETAPA DE ENSINO
+            if st.session_state.etapa_ensino == "Educação Básica":
+                base_dados = CONTEUDOS_EDUCACAO_BASICA
+            else:
+                base_dados = CONTEUDOS_ENSINO_SUPERIOR
+
+            # RÓTULO FIXO COMO "DISCIPLINA"
+            st.markdown('<div class="rotulo-seletor">📚 Disciplina:</div>', unsafe_allow_html=True)
+            
+            # SELEÇÃO DAS DISCIPLINAS EM ORDEM ALFABÉTICA
+            lista_disciplinas = sorted(list(base_dados.keys()))
+            materia_sel = st.selectbox("", lista_disciplinas, label_visibility="collapsed")
 
             col_b, col_t = st.columns(2)
             with col_b:
                 st.markdown('<div class="rotulo-seletor">📂 Grande Área:</div>', unsafe_allow_html=True)
-                blocos_disponiveis = list(ESTRUTURA_CONTEUDOS.get(materia_sel, {}).keys())
+                blocos_disponiveis = list(base_dados.get(materia_sel, {}).keys())
                 bloco_sel = st.selectbox("", blocos_disponiveis, label_visibility="collapsed")
 
             with col_t:
                 st.markdown('<div class="rotulo-seletor">🎯 Tópico da Lista:</div>', unsafe_allow_html=True)
-                topicos_disponiveis = ESTRUTURA_CONTEUDOS.get(materia_sel, {}).get(bloco_sel, [])
+                topicos_disponiveis = base_dados.get(materia_sel, {}).get(bloco_sel, [])
                 topico_sel = st.selectbox("", topicos_disponiveis, label_visibility="collapsed")
 
             st.divider()
@@ -903,7 +1034,7 @@ else:
                 st.markdown('<div class="rotulo-seletor">✍️ Assunto Específico / Outro Tema:</div>', unsafe_allow_html=True)
                 topico_customizado = st.text_input(
                     "",
-                    placeholder="Ex: ECA Digital, Lei 14.856/2024, Legislação Municipal, etc.",
+                    placeholder="Ex: LDB, ECA, Projeto Político Pedagógico, BNCC, etc.",
                     label_visibility="collapsed"
                 )
 
@@ -928,7 +1059,7 @@ else:
                     5: ("💀", "SOFRIMENTO (CONCURSO / MAGISTÉRIO)", "Nível 5: Prova de Concurso Público Exigente", "#8B5CF6"),
                 }
                 emoji, titulo_nivel, desc_nivel, cor_nivel = info_niveis[nivel_dificuldade]
-                
+
                 st.markdown(
                     f'''
                     <div class="card-dificuldade" style="background-color: {cor_nivel};">
