@@ -34,7 +34,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # -----------------------------------------------------------------------------
-# ESTILIZAÇÃO CSS GLOBAL
+# ESTILIZAÇÃO CSS GLOBAL (CORREÇÃO DE BORDAS, CAIXAS E VISIBILIDADE DE TEXTO)
 # -----------------------------------------------------------------------------
 bg_body = "#F0F4F8"
 text_color = "#0F172A"
@@ -121,36 +121,55 @@ st.markdown(
             display: inline-block;
         }}
 
+        /* CORREÇÃO DAS CAIXAS DE SELEÇÃO E CAMPOS DE TEXTO */
+        div[data-baseweb="select"] > div {{
+            background-color: #FFFFFF !important;
+            border: 2px solid #CBD5E1 !important;
+            border-radius: 10px !important;
+            color: #0F172A !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+        }}
+
         div[data-baseweb="select"] * {{
-            font-size: 1rem !important;
+            font-size: 0.95rem !important;
+            font-weight: 700 !important;
+            color: #0F172A !important;
+        }}
+
+        input[data-baseweb="input"], div[data-baseweb="input"] {{
+            background-color: #FFFFFF !important;
+            border: 2px solid #CBD5E1 !important;
+            border-radius: 10px !important;
+            color: #0F172A !important;
+            font-size: 0.95rem !important;
             font-weight: 600 !important;
         }}
-        
-        input[data-baseweb="input"] {{
-            font-size: 1rem !important;
-            font-weight: 500 !important;
+
+        div[data-baseweb="base-input"] {{
+            background-color: #FFFFFF !important;
+            border-radius: 10px !important;
         }}
 
         .rotulo-seletor {{
-            font-size: 1rem !important;
+            font-size: 0.95rem !important;
             font-weight: 800 !important;
             color: {text_color} !important;
-            margin-bottom: 4px !important;
+            margin-bottom: 6px !important;
             display: flex;
             align-items: center;
             gap: 6px;
             white-space: nowrap;
         }}
 
-        /* BOTÕES PADRÃO DO SISTEMA (MENUS/RODAPÉ) */
+        /* BOTÕES PADRÃO DO SISTEMA */
         div.stButton > button {{
             font-size: 0.95rem;
-            padding: 10px 14px;
+            padding: 12px 14px;
             background-color: {btn_bg};
-            color: white;
+            color: white !important;
             border-radius: 10px;
             border: none;
-            font-weight: 600;
+            font-weight: 700;
             text-align: center;
             justify-content: center;
             line-height: 1.4;
@@ -158,30 +177,34 @@ st.markdown(
             word-wrap: break-word;
             margin-bottom: 6px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            opacity: 1 !important;
         }}
 
         div.stButton > button p {{
             text-align: center;
             width: 100%;
+            color: inherit !important;
+            opacity: 1 !important;
         }}
 
         /* CARDS LANDING PAGE */
         div.stButton > button[key="btn_basica"], div.stButton > button[key="btn_superior"] {{
             background-color: {btn_bg} !important;
-            color: white !important;
+            color: #FFFFFF !important;
             border-radius: 0px 0px 14px 14px !important;
             margin-top: -2px !important;
             width: 100% !important;
             text-align: center !important;
             justify-content: center !important;
             font-weight: 800 !important;
-            font-size: 1rem !important;
+            font-size: 0.95rem !important;
             padding: 12px 14px !important;
+            opacity: 1 !important;
         }}
 
         .card-basica-topo, .card-superior-topo {{
             background-color: {card_bg};
-            border: 1px solid {card_border};
+            border: 2px solid {card_border};
             border-bottom: none;
             border-radius: 14px 14px 0px 0px;
             padding: 16px 14px 10px 14px;
@@ -191,7 +214,7 @@ st.markdown(
 
         .card-modulo {{
             background-color: {card_bg};
-            border: 1px solid {card_border};
+            border: 2px solid {card_border};
             border-radius: 14px;
             padding: 16px 12px;
             text-align: center;
@@ -203,11 +226,12 @@ st.markdown(
         .enunciado-grande {{
             font-size: 1.05rem !important;
             font-weight: 700;
-            line-height: 1.45;
+            line-height: 1.5;
             color: {text_color};
             margin-bottom: 16px;
             padding: 16px;
             background-color: {card_bg};
+            border: 2px solid {card_border};
             border-left: 6px solid {btn_bg};
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
@@ -215,7 +239,7 @@ st.markdown(
 
         .card-dificuldade {{
             border-radius: 10px;
-            padding: 8px 12px;
+            padding: 10px 12px;
             text-align: center;
             color: white;
             font-weight: bold;
@@ -229,7 +253,7 @@ st.markdown(
 
         .card-resultado {{
             background-color: {card_bg};
-            border: 1px solid {card_border};
+            border: 2px solid {card_border};
             border-radius: 14px;
             text-align: center;
         }}
@@ -534,7 +558,7 @@ if st.session_state.etapa_ensino is None:
 # PAINEL PRINCIPAL DE ESTUDOS & SIMULADO
 # -----------------------------------------------------------------------------
 else:
-    # SE O SIMULADO ESTIVER EM ANDAMENTO OU CONCLUÍDO (MODO PÁGINA LIMPA)
+    # SE O SIMULADO ESTIVER EM ANDAMENTO OU CONCLUÍDO
     if st.session_state.questoes_online or st.session_state.simulado_concluido:
         
         # TELA DE RESULTADO FINAL
@@ -554,23 +578,23 @@ else:
             st.markdown(
                 f"""
                 <div class="card-resultado" style="padding: 20px;">
-                    <h2 style="font-size: 1.6rem; margin-bottom: 8px;">🏆 SIMULADO CONCLUÍDO!</h2>
+                    <h2 style="font-size: 1.6rem; margin-bottom: 8px; color: {text_color};">🏆 SIMULADO CONCLUÍDO!</h2>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
                         <div class="metric-box">
-                            <div style="font-size: 1.4rem; font-weight: bold;">{acertos} / {total_questoes}</div>
-                            <div style="font-size: 0.75rem; text-transform: uppercase;">Acertos</div>
+                            <div style="font-size: 1.4rem; font-weight: bold; color: {text_color};">{acertos} / {total_questoes}</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase; color: {text_color};">Acertos</div>
                         </div>
                         <div class="metric-box">
-                            <div style="font-size: 1.4rem; font-weight: bold;">{erros}</div>
-                            <div style="font-size: 0.75rem; text-transform: uppercase;">Erros</div>
+                            <div style="font-size: 1.4rem; font-weight: bold; color: {text_color};">{erros}</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase; color: {text_color};">Erros</div>
                         </div>
                         <div class="metric-box">
-                            <div style="font-size: 1.4rem; font-weight: bold;">{porcentagem:.1f}%</div>
-                            <div style="font-size: 0.75rem; text-transform: uppercase;">Aproveitamento</div>
+                            <div style="font-size: 1.4rem; font-weight: bold; color: {text_color};">{porcentagem:.1f}%</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase; color: {text_color};">Aproveitamento</div>
                         </div>
                         <div class="metric-box">
-                            <div style="font-size: 1.4rem; font-weight: bold;">⏱️ {tempo_str}</div>
-                            <div style="font-size: 0.75rem; text-transform: uppercase;">Tempo Total</div>
+                            <div style="font-size: 1.4rem; font-weight: bold; color: {text_color};">⏱️ {tempo_str}</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase; color: {text_color};">Tempo Total</div>
                         </div>
                     </div>
                 </div>
@@ -607,7 +631,7 @@ else:
             st.markdown(
                 f"""
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-weight: 800; font-size: 1rem;">QUESTÃO {idx + 1} DE {total_q}</span>
+                    <span style="font-weight: 800; font-size: 1rem; color: {text_color};">QUESTÃO {idx + 1} DE {total_q}</span>
                     <span style="font-weight: 700; font-size: 0.95rem; color: #EF4444;">⏱️ {tempo_fmt}</span>
                 </div>
                 """,
@@ -624,7 +648,7 @@ else:
             alternativas = questao_atual.get("alternativas", {})
             opcao_correta = questao_atual.get("correta", "").lower()
 
-            # ESTILIZAÇÃO CSS QUE FORÇA ALTA LEGIBILIDADE (E REMOVE A OPACIDADE DE BOTÕES DESATIVADOS)
+            # REGRA ESTRITA DE VISIBILIDADE DAS ALTERNATIVAS
             css_botoes_dinamicos = ""
 
             for chave in sorted(alternativas.keys()):
@@ -632,11 +656,11 @@ else:
                 key_btn = f"btn_alt_{idx}_{letra}"
 
                 if not resposta_salva:
-                    # Antes de responder: Fundo branco limpo, texto preto, borda cinza suave
+                    # Antes de responder: Fundo branco puro, texto preto forte (#0F172A), borda cinza bem visível
                     css_botoes_dinamicos += f"""
                     div.stButton > button[key="{key_btn}"] {{
                         background-color: #FFFFFF !important;
-                        border: 2px solid #CBD5E1 !important;
+                        border: 2px solid #94A3B8 !important;
                         color: #0F172A !important;
                         opacity: 1 !important;
                         border-radius: 12px !important;
@@ -645,22 +669,25 @@ else:
                         justify-content: flex-start !important;
                         font-weight: 700 !important;
                         font-size: 0.95rem !important;
-                        box-shadow: 0 2px 6px rgba(0,0,0,0.03) !important;
-                        transition: all 0.2s ease !important;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+                    }}
+                    div.stButton > button[key="{key_btn}"] p {{
+                        color: #0F172A !important;
+                        opacity: 1 !important;
+                        font-weight: 700 !important;
                     }}
                     div.stButton > button[key="{key_btn}"]:hover {{
                         border-color: #2563EB !important;
                         background-color: #F8FAFC !important;
-                        color: #2563EB !important;
                     }}
                     """
                 else:
-                    # Após responder: Garante opacidade 100% e cores legíveis
+                    # Após responder: Força opacidade 100% no container e na fonte
                     if letra == opcao_correta:
-                        # Resposta Correta: Verde suave + Borda Verde + Texto bem visível
+                        # Resposta Correta: Fundo verde suave, texto escuro de altíssimo contraste
                         css_botoes_dinamicos += f"""
                         div.stButton > button[key="{key_btn}"] {{
-                            background-color: #ECFDF5 !important;
+                            background-color: #D1FAE5 !important;
                             border: 2px solid #10B981 !important;
                             color: #064E3B !important;
                             opacity: 1 !important;
@@ -671,14 +698,19 @@ else:
                             font-weight: 800 !important;
                             font-size: 0.95rem !important;
                         }}
+                        div.stButton > button[key="{key_btn}"] p {{
+                            color: #064E3B !important;
+                            opacity: 1 !important;
+                            font-weight: 800 !important;
+                        }}
                         """
                     elif letra == resposta_salva:
-                        # Alternativa Marcada Incorreta: Vermelho suave + Borda Vermelha
+                        # Resposta Errada: Fundo vermelho suave, texto vermelho escuro
                         css_botoes_dinamicos += f"""
                         div.stButton > button[key="{key_btn}"] {{
-                            background-color: #FEF2F2 !important;
+                            background-color: #FEE2E2 !important;
                             border: 2px solid #EF4444 !important;
-                            color: #991B1B !important;
+                            color: #7F1D1D !important;
                             opacity: 1 !important;
                             border-radius: 12px !important;
                             padding: 14px 16px !important;
@@ -687,13 +719,18 @@ else:
                             font-weight: 800 !important;
                             font-size: 0.95rem !important;
                         }}
+                        div.stButton > button[key="{key_btn}"] p {{
+                            color: #7F1D1D !important;
+                            opacity: 1 !important;
+                            font-weight: 800 !important;
+                        }}
                         """
                     else:
-                        # Outras Alternativas não marcadas: Mantêm texto preto legível e fundo branco
+                        # Outras Alternativas não marcadas: Mantêm texto preto nítido e caixa branca
                         css_botoes_dinamicos += f"""
                         div.stButton > button[key="{key_btn}"] {{
                             background-color: #FFFFFF !important;
-                            border: 1.5px solid #CBD5E1 !important;
+                            border: 2px solid #CBD5E1 !important;
                             color: #0F172A !important;
                             opacity: 1 !important;
                             border-radius: 12px !important;
@@ -702,6 +739,11 @@ else:
                             justify-content: flex-start !important;
                             font-weight: 600 !important;
                             font-size: 0.95rem !important;
+                        }}
+                        div.stButton > button[key="{key_btn}"] p {{
+                            color: #0F172A !important;
+                            opacity: 1 !important;
+                            font-weight: 600 !important;
                         }}
                         """
 
