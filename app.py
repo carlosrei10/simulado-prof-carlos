@@ -12,7 +12,7 @@ import streamlit.components.v1 as components
 # CONFIGURAÇÃO DA PÁGINA
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="👑 Prof. Carlos | Rei dos Simulados",
+    page_title="👑 Rei dos Simulados",
     page_icon="👑",
     layout="centered",
     initial_sidebar_state="collapsed",
@@ -34,7 +34,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # -----------------------------------------------------------------------------
-# ESTILIZAÇÃO CSS (CAIXAS DE DIÁLOGO E FEEDBACK COLORIDO)
+# ESTILIZAÇÃO CSS
 # -----------------------------------------------------------------------------
 bg_body = "#F0F4F8"
 text_color = "#0F172A"
@@ -65,7 +65,7 @@ st.markdown(
             margin: 0 auto !important;
         }}
 
-        /* HERO BANNER */
+        /* HERO BANNER LANDING PAGE */
         .hero-banner {{
             background: {hero_bg};
             border-radius: 16px;
@@ -142,7 +142,7 @@ st.markdown(
             white-space: nowrap;
         }}
 
-        /* BOTÕES DE NAVEGAÇÃO */
+        /* BOTÕES DE NAVEGAÇÃO DO RODAPÉ */
         div.stButton > button {{
             font-size: 0.95rem !important;
             padding: 10px 14px !important;
@@ -514,8 +514,8 @@ if st.session_state.etapa_ensino is None:
         """
         <div class="hero-banner">
             <span class="hero-coroa">👑</span>
-            <h1 class="hero-titulo">PROFESSOR CARLOS</h1>
-            <div class="hero-subtitulo">⚡ O REI DOS SIMULADOS ⚡</div>
+            <h1 class="hero-titulo">REI DOS SIMULADOS</h1>
+            <div class="hero-subtitulo">⚡ TREINE COM PRECISÃO ⚡</div>
             <div class="hero-bordao">"Domine a banca, treine com precisão e conquiste a sua vaga!"</div>
         </div>
         """,
@@ -560,117 +560,260 @@ if st.session_state.etapa_ensino is None:
             st.rerun()
 
 # -----------------------------------------------------------------------------
-# PAINEL PRINCIPAL DE ESTUDOS (PÁGINAS SECUNDÁRIAS)
+# PAINEL PRINCIPAL DE ESTUDOS & SIMULADO
 # -----------------------------------------------------------------------------
 else:
-    # --- BOTÕES DE NAVEGAÇÃO NO TOPO ---
-    renderizar_botoes_navegacao("topo")
-    st.divider()
+    # SE O SIMULADO ESTIVER EM ANDAMENTO OU CONCLUÍDO (MODO PÁGINA LIMPA)
+    if st.session_state.questoes_online or st.session_state.simulado_concluido:
+        
+        # TELA DE RESULTADO FINAL
+        if st.session_state.simulado_concluido:
+            rolar_para_o_topo()
+            total_questoes = len(st.session_state.questoes_online)
+            acertos = 0
+            for i, q in enumerate(st.session_state.questoes_online):
+                if st.session_state.respostas_usuario.get(i) == q["correta"].lower():
+                    acertos += 1
+            
+            erros = total_questoes - acertos
+            porcentagem = (acertos / total_questoes * 100) if total_questoes > 0 else 0
+            tempo_total = time.time() - st.session_state.tempo_inicio if st.session_state.tempo_inicio else 0
+            tempo_str = formatar_tempo(tempo_total)
 
-    st.markdown(
-        f"""
-        <div style="background: {header_gradient}; padding: 12px 18px; border-radius: 12px; margin-bottom: 16px; color: white; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 1.5rem;">👑</span>
-                <div>
-                    <div style="font-size: 1.15rem; font-weight: 900; line-height: 1.1;">PROF. CARLOS</div>
-                    <div style="font-size: 0.7rem; color: #FACC15; font-weight: 700; letter-spacing: 0.5px;">O REI DOS SIMULADOS</div>
+            st.markdown(
+                f"""
+                <div class="card-resultado" style="padding: 20px;">
+                    <h2 style="font-size: 1.6rem; margin-bottom: 8px;">🏆 SIMULADO CONCLUÍDO!</h2>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
+                        <div class="metric-box">
+                            <div style="font-size: 1.4rem; font-weight: bold;">{acertos} / {total_questoes}</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase;">Acertos</div>
+                        </div>
+                        <div class="metric-box">
+                            <div style="font-size: 1.4rem; font-weight: bold;">{erros}</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase;">Erros</div>
+                        </div>
+                        <div class="metric-box">
+                            <div style="font-size: 1.4rem; font-weight: bold;">{porcentagem:.1f}%</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase;">Aproveitamento</div>
+                        </div>
+                        <div class="metric-box">
+                            <div style="font-size: 1.4rem; font-weight: bold;">⏱️ {tempo_str}</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase;">Tempo Total</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <span style="background-color: rgba(255, 255, 255, 0.18); padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; border: 1px solid rgba(255, 255, 255, 0.2);">
-                {st.session_state.etapa_ensino}
-            </span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+                """,
+                unsafe_allow_html=True,
+            )
 
-    if st.session_state.funcao_selecionada is None:
+            st.write("")
+            col_res1, col_res2 = st.columns(2)
+            with col_res1:
+                if st.button("🔄 REINICIAR SIMULADO", key="btn_reiniciar_simulado", use_container_width=True):
+                    st.session_state.respostas_usuario = {}
+                    st.session_state.indice_questao = 0
+                    st.session_state.tempo_inicio = time.time()
+                    st.session_state.simulado_concluido = False
+                    st.rerun()
+            
+            with col_res2:
+                if st.button("⬅️ REVISAR QUESTÕES", key="btn_nav_anterior", use_container_width=True):
+                    st.session_state.simulado_concluido = False
+                    st.session_state.indice_questao = total_questoes - 1
+                    st.rerun()
+
+        # FLUXO DE EXIBIÇÃO DA QUESTÃO
+        else:
+            rolar_para_o_topo()
+            idx = st.session_state.indice_questao
+            questao_atual = st.session_state.questoes_online[idx]
+            total_q = len(st.session_state.questoes_online)
+
+            tempo_decorrido = time.time() - st.session_state.tempo_inicio if st.session_state.tempo_inicio else 0
+            tempo_fmt = formatar_tempo(tempo_decorrido)
+
+            st.markdown(
+                f"""
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 800; font-size: 1rem;">QUESTÃO {idx + 1} DE {total_q}</span>
+                    <span style="font-weight: 700; font-size: 0.95rem; color: #EF4444;">⏱️ {tempo_fmt}</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.progress((idx + 1) / total_q)
+
+            enunciado = limpar_e_formatar_texto(questao_atual.get("enunciado", ""))
+            st.markdown(f'<div class="enunciado-grande">{enunciado}</div>', unsafe_allow_html=True)
+
+            st.markdown('<div class="rotulo-seletor">Escolha a alternativa correta:</div>', unsafe_allow_html=True)
+
+            resposta_salva = st.session_state.respostas_usuario.get(idx, None)
+            alternativas = questao_atual.get("alternativas", {})
+            opcao_correta = questao_atual.get("correta", "").lower()
+
+            for chave in sorted(alternativas.keys()):
+                letra = chave.lower()
+                texto_alt = limpar_e_formatar_texto(alternativas[chave])
+                
+                classe_css = "caixa-opcao"
+                icone = f"<b>{letra.upper()})</b>"
+                
+                if resposta_salva:
+                    if letra == opcao_correta:
+                        classe_css += " caixa-opcao-correta"
+                        icone = f"✅ <b>{letra.upper()})</b>"
+                    elif letra == resposta_salva and resposta_salva != opcao_correta:
+                        classe_css += " caixa-opcao-errada"
+                        icone = f"❌ <b>{letra.upper()})</b>"
+
+                st.markdown(
+                    f"""
+                    <div class="{classe_css}">
+                        <span>{icone}</span>
+                        <span>{texto_alt}</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                if not resposta_salva:
+                    if st.button(f"Selecionar Alternativa {letra.upper()}", key=f"btn_alt_{idx}_{letra}", use_container_width=True):
+                        st.session_state.respostas_usuario[idx] = letra
+                        st.rerun()
+
+            if resposta_salva:
+                if resposta_salva == opcao_correta:
+                    st.success(f"✅ **Excelente!** Você acertou esta questão.")
+                else:
+                    st.error(f"❌ **Você errou.** A alternativa correta é a letra **{opcao_correta.upper()}**.")
+
+                explicacao = questao_atual.get("explicacao", "")
+                if explicacao:
+                    st.info(f"💡 **Explicação:** {limpar_e_formatar_texto(explicacao)}")
+
+            st.write("")
+
+            col_voltar, col_avancar = st.columns(2)
+            with col_voltar:
+                if idx > 0:
+                    if st.button("⬅️ VOLTAR QUESTÃO", use_container_width=True):
+                        st.session_state.indice_questao -= 1
+                        st.rerun()
+
+            with col_avancar:
+                if idx < total_q - 1:
+                    if st.button("AVANÇAR QUESTÃO ➡️", use_container_width=True):
+                        st.session_state.indice_questao += 1
+                        st.rerun()
+                else:
+                    if st.button("🏁 FINALIZAR SIMULADO", type="primary", use_container_width=True):
+                        st.session_state.simulado_concluido = True
+                        st.rerun()
+
+    # TELA DE CONFIGURAÇÃO DO SIMULADO (ANTES DE INICIAR)
+    else:
+        # CAIXA AZUL REFORMULADA (SEM "PROF. CARLOS")
         st.markdown(
-            f"<h3 style='text-align: center; margin-bottom: 16px; color: {text_color}; font-weight: 800; font-size: 1.15rem;'>QUAL É A SUA META DE HOJE?</h3>",
+            f"""
+            <div style="background: {header_gradient}; padding: 14px 20px; border-radius: 12px; margin-bottom: 16px; color: white; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.6rem;">👑</span>
+                    <div style="font-size: 1.25rem; font-weight: 900; letter-spacing: 0.5px; line-height: 1;">REI DOS SIMULADOS</div>
+                </div>
+                <span style="background-color: rgba(255, 255, 255, 0.18); padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; border: 1px solid rgba(255, 255, 255, 0.2);">
+                    {st.session_state.etapa_ensino}
+                </span>
+            </div>
+            """,
             unsafe_allow_html=True,
         )
 
-        c1, c2 = st.columns(2)
-
-        with c1:
+        if st.session_state.funcao_selecionada is None:
             st.markdown(
-                f"""
-                <div class="card-modulo">
-                    <div style="font-size: 2rem;">💻</div>
-                    <h4 style="color: {btn_bg}; margin-top: 4px; font-size: 1rem;">Simulado Interativo</h4>
-                    <p style="color: {text_color}; opacity: 0.8; font-size: 0.8rem;">Responda questão por questão com feedback imediato.</p>
-                </div>
-                """,
+                f"<h3 style='text-align: center; margin-bottom: 16px; color: {text_color}; font-weight: 800; font-size: 1.15rem;'>QUAL É A SUA META DE HOJE?</h3>",
                 unsafe_allow_html=True,
             )
-            if st.button("🚀 Acessar Online", key="btn_f1", use_container_width=True):
-                st.session_state.funcao_selecionada = "online"
-                st.rerun()
 
-            st.markdown(
-                f"""
-                <div class="card-modulo" style="margin-top: 12px;">
-                    <div style="font-size: 2rem;">🏛️</div>
-                    <h4 style="color: #7C3AED; margin-top: 4px; font-size: 1rem;">ENEM & Concursos</h4>
-                    <p style="color: {text_color}; opacity: 0.8; font-size: 0.8rem;">Questões no formato de bancas (Cebraspe, FGV, Vunesp).</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button("🎯 Banco de Provas", key="btn_f4", use_container_width=True):
-                st.session_state.funcao_selecionada = "concursos"
-                st.rerun()
+            c1, c2 = st.columns(2)
 
-        with c2:
-            st.markdown(
-                f"""
-                <div class="card-modulo">
-                    <div style="font-size: 2rem;">📄</div>
-                    <h4 style="color: #D97706; margin-top: 4px; font-size: 1rem;">PDF Simulado</h4>
-                    <p style="color: {text_color}; opacity: 0.8; font-size: 0.8rem;">Gere provas completas e gabarito para impressão.</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button("📥 Gerar PDF", key="btn_f2", use_container_width=True):
-                st.session_state.funcao_selecionada = "pdf"
-                st.rerun()
+            with c1:
+                st.markdown(
+                    f"""
+                    <div class="card-modulo">
+                        <div style="font-size: 2rem;">💻</div>
+                        <h4 style="color: {btn_bg}; margin-top: 4px; font-size: 1rem;">Simulado Interativo</h4>
+                        <p style="color: {text_color}; opacity: 0.8; font-size: 0.8rem;">Responda questão por questão com feedback imediato.</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if st.button("🚀 Acessar Online", key="btn_f1", use_container_width=True):
+                    st.session_state.funcao_selecionada = "online"
+                    st.rerun()
 
-            st.markdown(
-                f"""
-                <div class="card-modulo" style="margin-top: 12px;">
-                    <div style="font-size: 2rem;">📚</div>
-                    <h4 style="color: #059669; margin-top: 4px; font-size: 1rem;">Biblioteca Teórica</h4>
-                    <p style="color: {text_color}; opacity: 0.8; font-size: 0.8rem;">Resumos teóricos direto ao ponto para revisão.</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button("📖 Conteúdos", key="btn_f3", use_container_width=True):
-                st.session_state.funcao_selecionada = "conteudos"
-                st.rerun()
+                st.markdown(
+                    f"""
+                    <div class="card-modulo" style="margin-top: 12px;">
+                        <div style="font-size: 2rem;">🏛️</div>
+                        <h4 style="color: #7C3AED; margin-top: 4px; font-size: 1rem;">ENEM & Concursos</h4>
+                        <p style="color: {text_color}; opacity: 0.8; font-size: 0.8rem;">Questões no formato de bancas (Cebraspe, FGV, Vunesp).</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if st.button("🎯 Banco de Provas", key="btn_f4", use_container_width=True):
+                    st.session_state.funcao_selecionada = "concursos"
+                    st.rerun()
 
-    else:
-        st.markdown('<div class="rotulo-seletor">📚 Matéria:</div>', unsafe_allow_html=True)
-        materia_sel = st.selectbox("", list(ESTRUTURA_CONTEUDOS.keys()), label_visibility="collapsed")
+            with c2:
+                st.markdown(
+                    f"""
+                    <div class="card-modulo">
+                        <div style="font-size: 2rem;">📄</div>
+                        <h4 style="color: #D97706; margin-top: 4px; font-size: 1rem;">PDF Simulado</h4>
+                        <p style="color: {text_color}; opacity: 0.8; font-size: 0.8rem;">Gere provas completas e gabarito para impressão.</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if st.button("📥 Gerar PDF", key="btn_f2", use_container_width=True):
+                    st.session_state.funcao_selecionada = "pdf"
+                    st.rerun()
 
-        col_b, col_t = st.columns(2)
-        with col_b:
-            st.markdown('<div class="rotulo-seletor">📂 Grande Área:</div>', unsafe_allow_html=True)
-            blocos_disponiveis = list(ESTRUTURA_CONTEUDOS.get(materia_sel, {}).keys())
-            bloco_sel = st.selectbox("", blocos_disponiveis, label_visibility="collapsed")
+                st.markdown(
+                    f"""
+                    <div class="card-modulo" style="margin-top: 12px;">
+                        <div style="font-size: 2rem;">📚</div>
+                        <h4 style="color: #059669; margin-top: 4px; font-size: 1rem;">Biblioteca Teórica</h4>
+                        <p style="color: {text_color}; opacity: 0.8; font-size: 0.8rem;">Resumos teóricos direto ao ponto para revisão.</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if st.button("📖 Conteúdos", key="btn_f3", use_container_width=True):
+                    st.session_state.funcao_selecionada = "conteudos"
+                    st.rerun()
 
-        with col_t:
-            st.markdown('<div class="rotulo-seletor">🎯 Tópico da Lista:</div>', unsafe_allow_html=True)
-            topicos_disponiveis = ESTRUTURA_CONTEUDOS.get(materia_sel, {}).get(bloco_sel, [])
-            topico_sel = st.selectbox("", topicos_disponiveis, label_visibility="collapsed")
+        else:
+            st.markdown('<div class="rotulo-seletor">📚 Matéria:</div>', unsafe_allow_html=True)
+            materia_sel = st.selectbox("", list(ESTRUTURA_CONTEUDOS.keys()), label_visibility="collapsed")
 
-        st.divider()
+            col_b, col_t = st.columns(2)
+            with col_b:
+                st.markdown('<div class="rotulo-seletor">📂 Grande Área:</div>', unsafe_allow_html=True)
+                blocos_disponiveis = list(ESTRUTURA_CONTEUDOS.get(materia_sel, {}).keys())
+                bloco_sel = st.selectbox("", blocos_disponiveis, label_visibility="collapsed")
 
-        # SIMULADO INTERATIVO
-        if st.session_state.funcao_selecionada == "online":
-            if not st.session_state.questoes_online:
+            with col_t:
+                st.markdown('<div class="rotulo-seletor">🎯 Tópico da Lista:</div>', unsafe_allow_html=True)
+                topicos_disponiveis = ESTRUTURA_CONTEUDOS.get(materia_sel, {}).get(bloco_sel, [])
+                topico_sel = st.selectbox("", topicos_disponiveis, label_visibility="collapsed")
+
+            st.divider()
+
+            if st.session_state.funcao_selecionada == "online":
                 st.markdown('<div class="rotulo-seletor">✍️ Assunto Específico / Outro Tema:</div>', unsafe_allow_html=True)
                 topico_customizado = st.text_input(
                     "",
@@ -729,155 +872,9 @@ else:
                             st.session_state.tempo_inicio = time.time()
                             st.rerun()
 
-            # TELA DE RESULTADO FINAL
-            elif st.session_state.simulado_concluido:
-                rolar_para_o_topo()
-                total_questoes = len(st.session_state.questoes_online)
-                acertos = 0
-                for i, q in enumerate(st.session_state.questoes_online):
-                    if st.session_state.respostas_usuario.get(i) == q["correta"].lower():
-                        acertos += 1
-                
-                erros = total_questoes - acertos
-                porcentagem = (acertos / total_questoes * 100) if total_questoes > 0 else 0
-                tempo_total = time.time() - st.session_state.tempo_inicio if st.session_state.tempo_inicio else 0
-                tempo_str = formatar_tempo(tempo_total)
+            elif st.session_state.funcao_selecionada in ["pdf", "conteudos", "concursos"]:
+                st.info("📌 Módulo em desenvolvimento para esta etapa.")
 
-                st.markdown(
-                    f"""
-                    <div class="card-resultado" style="padding: 20px;">
-                        <h2 style="font-size: 1.6rem; margin-bottom: 8px;">🏆 SIMULADO CONCLUÍDO!</h2>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
-                            <div class="metric-box">
-                                <div style="font-size: 1.4rem; font-weight: bold;">{acertos} / {total_questoes}</div>
-                                <div style="font-size: 0.75rem; text-transform: uppercase;">Acertos</div>
-                            </div>
-                            <div class="metric-box">
-                                <div style="font-size: 1.4rem; font-weight: bold;">{erros}</div>
-                                <div style="font-size: 0.75rem; text-transform: uppercase;">Erros</div>
-                            </div>
-                            <div class="metric-box">
-                                <div style="font-size: 1.4rem; font-weight: bold;">{porcentagem:.1f}%</div>
-                                <div style="font-size: 0.75rem; text-transform: uppercase;">Aproveitamento</div>
-                            </div>
-                            <div class="metric-box">
-                                <div style="font-size: 1.4rem; font-weight: bold;">⏱️ {tempo_str}</div>
-                                <div style="font-size: 0.75rem; text-transform: uppercase;">Tempo Total</div>
-                            </div>
-                        </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-                st.write("")
-                col_res1, col_res2 = st.columns(2)
-                with col_res1:
-                    if st.button("🔄 REINICIAR SIMULADO", key="btn_reiniciar_simulado", use_container_width=True):
-                        st.session_state.respostas_usuario = {}
-                        st.session_state.indice_questao = 0
-                        st.session_state.tempo_inicio = time.time()
-                        st.session_state.simulado_concluido = False
-                        st.rerun()
-                
-                with col_res2:
-                    if st.button("⬅️ REVISAR QUESTÕES", key="btn_nav_anterior", use_container_width=True):
-                        st.session_state.simulado_concluido = False
-                        st.session_state.indice_questao = total_questoes - 1
-                        st.rerun()
-
-            # FLUXO DE QUESTÕES ONLINE
-            else:
-                rolar_para_o_topo()
-                idx = st.session_state.indice_questao
-                questao_atual = st.session_state.questoes_online[idx]
-                total_q = len(st.session_state.questoes_online)
-
-                tempo_decorrido = time.time() - st.session_state.tempo_inicio if st.session_state.tempo_inicio else 0
-                tempo_fmt = formatar_tempo(tempo_decorrido)
-
-                st.markdown(
-                    f"""
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-weight: 800; font-size: 1rem;">QUESTÃO {idx + 1} DE {total_q}</span>
-                        <span style="font-weight: 700; font-size: 0.95rem; color: #EF4444;">⏱️ {tempo_fmt}</span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                st.progress((idx + 1) / total_q)
-
-                enunciado = limpar_e_formatar_texto(questao_atual.get("enunciado", ""))
-                st.markdown(f'<div class="enunciado-grande">{enunciado}</div>', unsafe_allow_html=True)
-
-                st.markdown('<div class="rotulo-seletor">Escolha a alternativa correta:</div>', unsafe_allow_html=True)
-
-                resposta_salva = st.session_state.respostas_usuario.get(idx, None)
-                alternativas = questao_atual.get("alternativas", {})
-                opcao_correta = questao_atual.get("correta", "").lower()
-
-                for chave in sorted(alternativas.keys()):
-                    letra = chave.lower()
-                    texto_alt = limpar_e_formatar_texto(alternativas[chave])
-                    
-                    classe_css = "caixa-opcao"
-                    icone = f"<b>{letra.upper()})</b>"
-                    
-                    if resposta_salva:
-                        if letra == opcao_correta:
-                            classe_css += " caixa-opcao-correta"
-                            icone = f"✅ <b>{letra.upper()})</b>"
-                        elif letra == resposta_salva and resposta_salva != opcao_correta:
-                            classe_css += " caixa-opcao-errada"
-                            icone = f"❌ <b>{letra.upper()})</b>"
-
-                    st.markdown(
-                        f"""
-                        <div class="{classe_css}">
-                            <span>{icone}</span>
-                            <span>{texto_alt}</span>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-
-                    if not resposta_salva:
-                        if st.button(f"Selecionar Alternativa {letra.upper()}", key=f"btn_alt_{idx}_{letra}", use_container_width=True):
-                            st.session_state.respostas_usuario[idx] = letra
-                            st.rerun()
-
-                if resposta_salva:
-                    if resposta_salva == opcao_correta:
-                        st.success(f"✅ **Excelente!** Você acertou esta questão.")
-                    else:
-                        st.error(f"❌ **Você errou.** A alternativa correta é a letra **{opcao_correta.upper()}**.")
-
-                    explicacao = questao_atual.get("explicacao", "")
-                    if explicacao:
-                        st.info(f"💡 **Explicação:** {limpar_e_formatar_texto(explicacao)}")
-
-                st.write("")
-
-                col_voltar, col_avancar = st.columns(2)
-                with col_voltar:
-                    if idx > 0:
-                        if st.button("⬅️ VOLTAR QUESTÃO", use_container_width=True):
-                            st.session_state.indice_questao -= 1
-                            st.rerun()
-
-                with col_avancar:
-                    if idx < total_q - 1:
-                        if st.button("AVANÇAR QUESTÃO ➡️", use_container_width=True):
-                            st.session_state.indice_questao += 1
-                            st.rerun()
-                    else:
-                        if st.button("🏁 FINALIZAR SIMULADO", type="primary", use_container_width=True):
-                            st.session_state.simulado_concluido = True
-                            st.rerun()
-
-        elif st.session_state.funcao_selecionada in ["pdf", "conteudos", "concursos"]:
-            st.info("📌 Módulo em desenvolvimento para esta etapa.")
-
-    # --- BOTÕES DE NAVEGAÇÃO NO RODAPÉ ---
+    # --- BOTÕES DE NAVEGAÇÃO NO RODAPÉ (EXCLUSIVOS NA PARTE INFERIOR) ---
     st.divider()
     renderizar_botoes_navegacao("rodape")
