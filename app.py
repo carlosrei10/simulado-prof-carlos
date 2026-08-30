@@ -594,7 +594,7 @@ else:
                     st.session_state.indice_questao = total_questoes - 1
                     st.rerun()
 
-        # FLUXO DE EXIBIÇÃO DA QUESTÃO (CLIQUE DIRETO COM ESTILO BRANCO / VERDE / VERMELHO)
+        # FLUXO DE EXIBIÇÃO DA QUESTÃO
         else:
             rolar_para_o_topo()
             idx = st.session_state.indice_questao
@@ -624,7 +624,7 @@ else:
             alternativas = questao_atual.get("alternativas", {})
             opcao_correta = questao_atual.get("correta", "").lower()
 
-            # ESTILIZAÇÃO CSS ESPECÍFICA PARA AS CAIXAS DE ALTERNATIVA (SOBRESCREVE O AZUL)
+            # ESTILIZAÇÃO CSS QUE FORÇA ALTA LEGIBILIDADE (E REMOVE A OPACIDADE DE BOTÕES DESATIVADOS)
             css_botoes_dinamicos = ""
 
             for chave in sorted(alternativas.keys()):
@@ -632,17 +632,18 @@ else:
                 key_btn = f"btn_alt_{idx}_{letra}"
 
                 if not resposta_salva:
-                    # Estado limpo / branco antes de responder
+                    # Antes de responder: Fundo branco limpo, texto preto, borda cinza suave
                     css_botoes_dinamicos += f"""
                     div.stButton > button[key="{key_btn}"] {{
                         background-color: #FFFFFF !important;
                         border: 2px solid #CBD5E1 !important;
                         color: #0F172A !important;
+                        opacity: 1 !important;
                         border-radius: 12px !important;
                         padding: 14px 16px !important;
                         text-align: left !important;
                         justify-content: flex-start !important;
-                        font-weight: 600 !important;
+                        font-weight: 700 !important;
                         font-size: 0.95rem !important;
                         box-shadow: 0 2px 6px rgba(0,0,0,0.03) !important;
                         transition: all 0.2s ease !important;
@@ -654,49 +655,53 @@ else:
                     }}
                     """
                 else:
-                    # Estado após responder (Verde para correta, Vermelho para errada)
+                    # Após responder: Garante opacidade 100% e cores legíveis
                     if letra == opcao_correta:
+                        # Resposta Correta: Verde suave + Borda Verde + Texto bem visível
                         css_botoes_dinamicos += f"""
                         div.stButton > button[key="{key_btn}"] {{
                             background-color: #ECFDF5 !important;
                             border: 2px solid #10B981 !important;
-                            color: #065F46 !important;
+                            color: #064E3B !important;
+                            opacity: 1 !important;
                             border-radius: 12px !important;
                             padding: 14px 16px !important;
                             text-align: left !important;
                             justify-content: flex-start !important;
-                            font-weight: 700 !important;
+                            font-weight: 800 !important;
                             font-size: 0.95rem !important;
-                            opacity: 1 !important;
                         }}
                         """
                     elif letra == resposta_salva:
+                        # Alternativa Marcada Incorreta: Vermelho suave + Borda Vermelha
                         css_botoes_dinamicos += f"""
                         div.stButton > button[key="{key_btn}"] {{
                             background-color: #FEF2F2 !important;
                             border: 2px solid #EF4444 !important;
                             color: #991B1B !important;
+                            opacity: 1 !important;
                             border-radius: 12px !important;
                             padding: 14px 16px !important;
                             text-align: left !important;
                             justify-content: flex-start !important;
-                            font-weight: 700 !important;
+                            font-weight: 800 !important;
                             font-size: 0.95rem !important;
-                            opacity: 1 !important;
                         }}
                         """
                     else:
+                        # Outras Alternativas não marcadas: Mantêm texto preto legível e fundo branco
                         css_botoes_dinamicos += f"""
                         div.stButton > button[key="{key_btn}"] {{
                             background-color: #FFFFFF !important;
-                            border: 1px solid #E2E8F0 !important;
-                            color: #94A3B8 !important;
+                            border: 1.5px solid #CBD5E1 !important;
+                            color: #0F172A !important;
+                            opacity: 1 !important;
                             border-radius: 12px !important;
                             padding: 14px 16px !important;
                             text-align: left !important;
                             justify-content: flex-start !important;
+                            font-weight: 600 !important;
                             font-size: 0.95rem !important;
-                            opacity: 0.6 !important;
                         }}
                         """
 
@@ -721,7 +726,7 @@ else:
                     st.session_state.respostas_usuario[idx] = letra
                     st.rerun()
 
-            # FEEDBACK E EXPLICAÇÃO
+            # FEEDBACK E EXPLICAÇÃO ABAIXO DAS ALTERNATIVAS
             if resposta_salva:
                 st.write("")
                 if resposta_salva == opcao_correta:
