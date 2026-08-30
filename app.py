@@ -9,13 +9,13 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # -----------------------------------------------------------------------------
-# CONFIGURAÇÃO DA PÁGINA (Layout Centralizado para evitar esticar na horizontal)
+# CONFIGURAÇÃO DA PÁGINA
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="👑 Prof. Carlos | Rei dos Simulados",
     page_icon="👑",
     layout="centered",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 MODEL_NAME = "gemini-3.6-flash"
@@ -34,45 +34,16 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # -----------------------------------------------------------------------------
-# GERENCIAMENTO DE TEMA E IDENTIDADE VISUAL (SIDEBAR)
+# ESTILIZAÇÃO CSS (CAIXAS DE DIÁLOGO E FEEDBACK COLORIDO)
 # -----------------------------------------------------------------------------
-with st.sidebar:
-    st.header("🎨 Identidade Visual")
-    tema_selecionado = st.selectbox(
-        "Selecione o Tema da Interface:",
-        ["Azul Real (Padrão)", "Modo Escuro (Dark)", "Modo Claro (Light)"],
-        index=0
-    )
-    st.divider()
+bg_body = "#F0F4F8"
+text_color = "#0F172A"
+card_bg = "#FFFFFF"
+card_border = "#CBD5E1"
+header_gradient = "linear-gradient(135deg, #0B192C 0%, #1E3A8A 50%, #2563EB 100%)"
+hero_bg = "linear-gradient(135deg, #0F172A 0%, #1E3A8A 50%, #2563EB 100%)"
+btn_bg = "#2563EB"
 
-if tema_selecionado == "Modo Escuro (Dark)":
-    bg_body = "#0F172A"
-    text_color = "#F8FAFC"
-    card_bg = "#1E293B"
-    card_border = "#334155"
-    header_gradient = "linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%)"
-    hero_bg = "linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)"
-    btn_bg = "#3B82F6"
-elif tema_selecionado == "Modo Claro (Light)":
-    bg_body = "#F8FAFC"
-    text_color = "#0F172A"
-    card_bg = "#FFFFFF"
-    card_border = "#E2E8F0"
-    header_gradient = "linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)"
-    hero_bg = "linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #3B82F6 100%)"
-    btn_bg = "#2563EB"
-else:  # Azul Real (Padrão)
-    bg_body = "#F0F4F8"
-    text_color = "#0F172A"
-    card_bg = "#FFFFFF"
-    card_border = "#CBD5E1"
-    header_gradient = "linear-gradient(135deg, #0B192C 0%, #1E3A8A 50%, #2563EB 100%)"
-    hero_bg = "linear-gradient(135deg, #0F172A 0%, #1E3A8A 50%, #2563EB 100%)"
-    btn_bg = "#2563EB"
-
-# -----------------------------------------------------------------------------
-# ESTILIZAÇÃO CSS COMPACTA E PROPORCIONAL
-# -----------------------------------------------------------------------------
 st.markdown(
     f"""
     <style>
@@ -87,7 +58,6 @@ st.markdown(
             color: {text_color} !important;
         }}
 
-        /* Limitador de largura centralizado para eliminar o aspecto de esticado na horizontal */
         .block-container {{
             max-width: 720px !important;
             padding-top: 1.5rem !important;
@@ -95,7 +65,7 @@ st.markdown(
             margin: 0 auto !important;
         }}
 
-        /* HERO BANNER COMPACTO E CENTRALIZADO */
+        /* HERO BANNER */
         .hero-banner {{
             background: {hero_bg};
             border-radius: 16px;
@@ -172,7 +142,7 @@ st.markdown(
             white-space: nowrap;
         }}
 
-        /* Botões */
+        /* BOTÕES DE NAVEGAÇÃO */
         div.stButton > button {{
             font-size: 0.95rem !important;
             padding: 10px 14px !important;
@@ -195,7 +165,7 @@ st.markdown(
             width: 100% !important;
         }}
 
-        /* Cards Landing Page */
+        /* CARDS LANDING PAGE */
         div.stButton > button[key="btn_basica"], div.stButton > button[key="btn_superior"] {{
             background-color: {btn_bg} !important;
             color: white !important;
@@ -231,7 +201,7 @@ st.markdown(
         }}
 
         .enunciado-grande {{
-            font-size: 1.1rem !important;
+            font-size: 1.05rem !important;
             font-weight: 700;
             line-height: 1.45;
             color: {text_color};
@@ -240,6 +210,7 @@ st.markdown(
             background-color: {card_bg};
             border-left: 6px solid {btn_bg};
             border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }}
 
         .card-dificuldade {{
@@ -256,31 +227,42 @@ st.markdown(
             gap: 8px;
         }}
 
-        /* ESTILOS PARA AS RESPOSTAS (VERDE E VERMELHO) */
-        .resposta-opcao {{
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            border: 1px solid {card_border};
-            font-weight: 600;
+        /* CAIXAS DAS ALTERNATIVAS */
+        .caixa-opcao {{
             background-color: {card_bg};
+            border: 2px solid {card_border};
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: {text_color};
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
         }}
-        .resposta-correta {{
-            background-color: #D1FAE5 !important;
-            color: #065F46 !important;
+
+        .caixa-opcao-correta {{
+            background-color: #ECFDF5 !important;
             border: 2px solid #10B981 !important;
+            color: #065F46 !important;
         }}
-        .resposta-errada {{
-            background-color: #FEE2E2 !important;
-            color: #991B1B !important;
+
+        .caixa-opcao-errada {{
+            background-color: #FEF2F2 !important;
             border: 2px solid #EF4444 !important;
+            color: #991B1B !important;
         }}
+
         .card-resultado {{
             background-color: {card_bg};
             border: 1px solid {card_border};
             border-radius: 14px;
             text-align: center;
         }}
+
         .metric-box {{
             background-color: rgba(0,0,0,0.03);
             padding: 12px;
@@ -342,6 +324,41 @@ def limpar_e_formatar_texto(texto):
     texto = texto.replace(r"\div", "÷")
     texto = texto.replace("\\", "")
     return texto
+
+
+def resetar_para_inicio():
+    st.session_state.etapa_ensino = None
+    st.session_state.funcao_selecionada = None
+    st.session_state.questoes_online = []
+    st.session_state.respostas_usuario = {}
+    st.session_state.indice_questao = 0
+    st.session_state.tempo_inicio = None
+    st.session_state.simulado_concluido = False
+
+
+def voltar_etapa():
+    if st.session_state.simulado_concluido:
+        st.session_state.simulado_concluido = False
+    elif st.session_state.questoes_online:
+        st.session_state.questoes_online = []
+        st.session_state.respostas_usuario = {}
+        st.session_state.indice_questao = 0
+    elif st.session_state.funcao_selecionada:
+        st.session_state.funcao_selecionada = None
+    elif st.session_state.etapa_ensino:
+        st.session_state.etapa_ensino = None
+
+
+def renderizar_botoes_navegacao(posicao_key):
+    col_v, col_i = st.columns(2)
+    with col_v:
+        if st.button("⬅️ Voltar", key=f"btn_voltar_{posicao_key}", use_container_width=True):
+            voltar_etapa()
+            st.rerun()
+    with col_i:
+        if st.button("🏠 Início", key=f"btn_inicio_{posicao_key}", use_container_width=True):
+            resetar_para_inicio()
+            st.rerun()
 
 
 def gerar_lote_questoes(materia, topico, etapa, quantidade, nivel):
@@ -490,7 +507,7 @@ ESTRUTURA_CONTEUDOS = {
 }
 
 # -----------------------------------------------------------------------------
-# LANDING PAGE CENTRALIZADA
+# LANDING PAGE CENTRALIZADA (TELA PRINCIPAL)
 # -----------------------------------------------------------------------------
 if st.session_state.etapa_ensino is None:
     st.markdown(
@@ -543,9 +560,13 @@ if st.session_state.etapa_ensino is None:
             st.rerun()
 
 # -----------------------------------------------------------------------------
-# PAINEL PRINCIPAL DE ESTUDOS
+# PAINEL PRINCIPAL DE ESTUDOS (PÁGINAS SECUNDÁRIAS)
 # -----------------------------------------------------------------------------
 else:
+    # --- BOTÕES DE NAVEGAÇÃO NO TOPO ---
+    renderizar_botoes_navegacao("topo")
+    st.divider()
+
     st.markdown(
         f"""
         <div style="background: {header_gradient}; padding: 12px 18px; border-radius: 12px; margin-bottom: 16px; color: white; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
@@ -563,27 +584,6 @@ else:
         """,
         unsafe_allow_html=True,
     )
-
-    with st.sidebar:
-        st.header("📌 Navegação")
-        if st.button("🏠 Voltar ao Menu Principal", use_container_width=True):
-            st.session_state.funcao_selecionada = None
-            st.session_state.questoes_online = []
-            st.session_state.respostas_usuario = {}
-            st.session_state.indice_questao = 0
-            st.session_state.tempo_inicio = None
-            st.session_state.simulado_concluido = False
-            st.rerun()
-        st.divider()
-        if st.button("🔄 Trocar Etapa de Ensino", use_container_width=True):
-            st.session_state.etapa_ensino = None
-            st.session_state.funcao_selecionada = None
-            st.session_state.questoes_online = []
-            st.session_state.respostas_usuario = {}
-            st.session_state.indice_questao = 0
-            st.session_state.tempo_inicio = None
-            st.session_state.simulado_concluido = False
-            st.rerun()
 
     if st.session_state.funcao_selecionada is None:
         st.markdown(
@@ -668,9 +668,7 @@ else:
 
         st.divider()
 
-        # ---------------------------------------------------------------------
         # SIMULADO INTERATIVO
-        # ---------------------------------------------------------------------
         if st.session_state.funcao_selecionada == "online":
             if not st.session_state.questoes_online:
                 st.markdown('<div class="rotulo-seletor">✍️ Assunto Específico / Outro Tema:</div>', unsafe_allow_html=True)
@@ -728,7 +726,6 @@ else:
                         )
                         if questoes:
                             st.session_state.questoes_online = questoes
-                            # INICIA O CRONÔMETRO SOMENTE APÓS A PRIMEIRA QUESTÃO CARREGAR DE FATO
                             st.session_state.tempo_inicio = time.time()
                             st.rerun()
 
@@ -789,14 +786,13 @@ else:
                         st.session_state.indice_questao = total_questoes - 1
                         st.rerun()
 
-            # FLUXO DE QUESTÕES ON-LINE
+            # FLUXO DE QUESTÕES ONLINE
             else:
                 rolar_para_o_topo()
                 idx = st.session_state.indice_questao
                 questao_atual = st.session_state.questoes_online[idx]
                 total_q = len(st.session_state.questoes_online)
 
-                # BARRA DE PROGRESSO E CRONÔMETRO
                 tempo_decorrido = time.time() - st.session_state.tempo_inicio if st.session_state.tempo_inicio else 0
                 tempo_fmt = formatar_tempo(tempo_decorrido)
 
@@ -811,32 +807,50 @@ else:
                 )
                 st.progress((idx + 1) / total_q)
 
-                # ENUNCIADO
                 enunciado = limpar_e_formatar_texto(questao_atual.get("enunciado", ""))
                 st.markdown(f'<div class="enunciado-grande">{enunciado}</div>', unsafe_allow_html=True)
 
-                # SELEÇÃO DE ALTERNATIVA
+                st.markdown('<div class="rotulo-seletor">Escolha a alternativa correta:</div>', unsafe_allow_html=True)
+
                 resposta_salva = st.session_state.respostas_usuario.get(idx, None)
                 alternativas = questao_atual.get("alternativas", {})
                 opcao_correta = questao_atual.get("correta", "").lower()
 
-                opcao_escolhida = st.radio(
-                    "Escolha a alternativa correta:",
-                    options=list(alternativas.keys()),
-                    format_func=lambda x: f"{x.upper()}) {limpar_e_formatar_texto(alternativas[x])}",
-                    index=list(alternativas.keys()).index(resposta_salva) if resposta_salva in alternativas else None,
-                    key=f"radio_q_{idx}"
-                )
+                for chave in sorted(alternativas.keys()):
+                    letra = chave.lower()
+                    texto_alt = limpar_e_formatar_texto(alternativas[chave])
+                    
+                    classe_css = "caixa-opcao"
+                    icone = f"<b>{letra.upper()})</b>"
+                    
+                    if resposta_salva:
+                        if letra == opcao_correta:
+                            classe_css += " caixa-opcao-correta"
+                            icone = f"✅ <b>{letra.upper()})</b>"
+                        elif letra == resposta_salva and resposta_salva != opcao_correta:
+                            classe_css += " caixa-opcao-errada"
+                            icone = f"❌ <b>{letra.upper()})</b>"
 
-                if opcao_escolhida:
-                    st.session_state.respostas_usuario[idx] = opcao_escolhida
+                    st.markdown(
+                        f"""
+                        <div class="{classe_css}">
+                            <span>{icone}</span>
+                            <span>{texto_alt}</span>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
 
-                # FEEDBACK VERDE / VERMELHO
+                    if not resposta_salva:
+                        if st.button(f"Selecionar Alternativa {letra.upper()}", key=f"btn_alt_{idx}_{letra}", use_container_width=True):
+                            st.session_state.respostas_usuario[idx] = letra
+                            st.rerun()
+
                 if resposta_salva:
                     if resposta_salva == opcao_correta:
-                        st.success(f"✅ **Resposta Correta!** ({opcao_correta.upper()})")
+                        st.success(f"✅ **Excelente!** Você acertou esta questão.")
                     else:
-                        st.error(f"❌ **Você errou.** A resposta correta era a opção **{opcao_correta.upper()}**.")
+                        st.error(f"❌ **Você errou.** A alternativa correta é a letra **{opcao_correta.upper()}**.")
 
                     explicacao = questao_atual.get("explicacao", "")
                     if explicacao:
@@ -844,7 +858,6 @@ else:
 
                 st.write("")
 
-                # NAVEGAÇÃO ENTRE QUESTÕES (CORRIGIDO PARA "QUESTÃO")
                 col_voltar, col_avancar = st.columns(2)
                 with col_voltar:
                     if idx > 0:
@@ -864,3 +877,7 @@ else:
 
         elif st.session_state.funcao_selecionada in ["pdf", "conteudos", "concursos"]:
             st.info("📌 Módulo em desenvolvimento para esta etapa.")
+
+    # --- BOTÕES DE NAVEGAÇÃO NO RODAPÉ ---
+    st.divider()
+    renderizar_botoes_navegacao("rodape")
