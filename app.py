@@ -142,27 +142,27 @@ st.markdown(
             white-space: nowrap;
         }}
 
-        /* BOTÕES DE NAVEGAÇÃO DO RODAPÉ */
+        /* BOTÕES PADRÃO DO SISTEMA (MENUS/RODAPÉ) */
         div.stButton > button {{
-            font-size: 0.95rem !important;
-            padding: 10px 14px !important;
-            background-color: {btn_bg} !important;
-            color: white !important;
-            border-radius: 10px !important;
-            border: none !important;
-            font-weight: 600 !important;
-            text-align: center !important;
-            justify-content: center !important;
-            line-height: 1.4 !important;
-            white-space: normal !important;
-            word-wrap: break-word !important;
-            margin-bottom: 6px !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+            font-size: 0.95rem;
+            padding: 10px 14px;
+            background-color: {btn_bg};
+            color: white;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            text-align: center;
+            justify-content: center;
+            line-height: 1.4;
+            white-space: normal;
+            word-wrap: break-word;
+            margin-bottom: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }}
 
         div.stButton > button p {{
-            text-align: center !important;
-            width: 100% !important;
+            text-align: center;
+            width: 100%;
         }}
 
         /* CARDS LANDING PAGE */
@@ -594,7 +594,7 @@ else:
                     st.session_state.indice_questao = total_questoes - 1
                     st.rerun()
 
-        # FLUXO DE EXIBIÇÃO DA QUESTÃO (CLIQUE DIRETO NA CAIXA COM ESTILO IMAGEM 1)
+        # FLUXO DE EXIBIÇÃO DA QUESTÃO (CLIQUE DIRETO COM ESTILO BRANCO / VERDE / VERMELHO)
         else:
             rolar_para_o_topo()
             idx = st.session_state.indice_questao
@@ -624,7 +624,7 @@ else:
             alternativas = questao_atual.get("alternativas", {})
             opcao_correta = questao_atual.get("correta", "").lower()
 
-            # GERADOR DE CSS DINÂMICO PARA AS CAIXAS CLICÁVEIS DE ALTERNATIVAS
+            # ESTILIZAÇÃO CSS ESPECÍFICA PARA AS CAIXAS DE ALTERNATIVA (SOBRESCREVE O AZUL)
             css_botoes_dinamicos = ""
 
             for chave in sorted(alternativas.keys()):
@@ -632,7 +632,7 @@ else:
                 key_btn = f"btn_alt_{idx}_{letra}"
 
                 if not resposta_salva:
-                    # Estado padrão clicável
+                    # Estado limpo / branco antes de responder
                     css_botoes_dinamicos += f"""
                     div.stButton > button[key="{key_btn}"] {{
                         background-color: #FFFFFF !important;
@@ -650,10 +650,11 @@ else:
                     div.stButton > button[key="{key_btn}"]:hover {{
                         border-color: #2563EB !important;
                         background-color: #F8FAFC !important;
+                        color: #2563EB !important;
                     }}
                     """
                 else:
-                    # Estado após resposta (Verde para correta, Vermelho para erro)
+                    # Estado após responder (Verde para correta, Vermelho para errada)
                     if letra == opcao_correta:
                         css_botoes_dinamicos += f"""
                         div.stButton > button[key="{key_btn}"] {{
@@ -666,6 +667,7 @@ else:
                             justify-content: flex-start !important;
                             font-weight: 700 !important;
                             font-size: 0.95rem !important;
+                            opacity: 1 !important;
                         }}
                         """
                     elif letra == resposta_salva:
@@ -680,6 +682,7 @@ else:
                             justify-content: flex-start !important;
                             font-weight: 700 !important;
                             font-size: 0.95rem !important;
+                            opacity: 1 !important;
                         }}
                         """
                     else:
@@ -693,14 +696,13 @@ else:
                             text-align: left !important;
                             justify-content: flex-start !important;
                             font-size: 0.95rem !important;
-                            opacity: 0.7 !important;
+                            opacity: 0.6 !important;
                         }}
                         """
 
-            # Aplica os estilos nos botões da tela
             st.markdown(f"<style>{css_botoes_dinamicos}</style>", unsafe_allow_html=True)
 
-            # RENDERIZA AS CAIXAS CLICÁVEIS DE ALTERNATIVAS
+            # RENDERIZAÇÃO DAS ALTERNATIVAS CLICÁVEIS
             for chave in sorted(alternativas.keys()):
                 letra = chave.lower()
                 texto_alt = limpar_e_formatar_texto(alternativas[chave])
@@ -752,7 +754,6 @@ else:
 
     # TELA DE CONFIGURAÇÃO DO SIMULADO (ANTES DE INICIAR)
     else:
-        # CAIXA AZUL REFORMULADA (APENAS "REI DOS SIMULADOS")
         st.markdown(
             f"""
             <div style="background: {header_gradient}; padding: 14px 20px; border-radius: 12px; margin-bottom: 16px; color: white; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
@@ -913,6 +914,6 @@ else:
             elif st.session_state.funcao_selecionada in ["pdf", "conteudos", "concursos"]:
                 st.info("📌 Módulo em desenvolvimento para esta etapa.")
 
-    # --- BOTÕES DE NAVEGAÇÃO APENAS NO RODAPÉ ---
+    # --- BOTÕES DE NAVEGAÇÃO NO RODAPÉ ---
     st.divider()
     renderizar_botoes_navegacao("rodape")
