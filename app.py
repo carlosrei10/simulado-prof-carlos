@@ -34,7 +34,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # -----------------------------------------------------------------------------
-# ESTILIZAÇÃO CSS
+# ESTILIZAÇÃO CSS GLOBAL
 # -----------------------------------------------------------------------------
 bg_body = "#F0F4F8"
 text_color = "#0F172A"
@@ -225,35 +225,6 @@ st.markdown(
             align-items: center;
             justify-content: center;
             gap: 8px;
-        }}
-
-        /* CAIXAS DAS ALTERNATIVAS */
-        .caixa-opcao {{
-            background-color: {card_bg};
-            border: 2px solid {card_border};
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: {text_color};
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-            line-height: 1.4;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }}
-
-        .caixa-opcao-correta {{
-            background-color: #ECFDF5 !important;
-            border: 2px solid #10B981 !important;
-            color: #065F46 !important;
-        }}
-
-        .caixa-opcao-errada {{
-            background-color: #FEF2F2 !important;
-            border: 2px solid #EF4444 !important;
-            color: #991B1B !important;
         }}
 
         .card-resultado {{
@@ -623,7 +594,7 @@ else:
                     st.session_state.indice_questao = total_questoes - 1
                     st.rerun()
 
-        # FLUXO DE EXIBIÇÃO DA QUESTÃO
+        # FLUXO DE EXIBIÇÃO DA QUESTÃO (CLIQUE DIRETO NA CAIXA COM ESTILO IMAGEM 1)
         else:
             rolar_para_o_topo()
             idx = st.session_state.indice_questao
@@ -653,37 +624,104 @@ else:
             alternativas = questao_atual.get("alternativas", {})
             opcao_correta = questao_atual.get("correta", "").lower()
 
+            # GERADOR DE CSS DINÂMICO PARA AS CAIXAS CLICÁVEIS DE ALTERNATIVAS
+            css_botoes_dinamicos = ""
+
+            for chave in sorted(alternativas.keys()):
+                letra = chave.lower()
+                key_btn = f"btn_alt_{idx}_{letra}"
+
+                if not resposta_salva:
+                    # Estado padrão clicável
+                    css_botoes_dinamicos += f"""
+                    div.stButton > button[key="{key_btn}"] {{
+                        background-color: #FFFFFF !important;
+                        border: 2px solid #CBD5E1 !important;
+                        color: #0F172A !important;
+                        border-radius: 12px !important;
+                        padding: 14px 16px !important;
+                        text-align: left !important;
+                        justify-content: flex-start !important;
+                        font-weight: 600 !important;
+                        font-size: 0.95rem !important;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.03) !important;
+                        transition: all 0.2s ease !important;
+                    }}
+                    div.stButton > button[key="{key_btn}"]:hover {{
+                        border-color: #2563EB !important;
+                        background-color: #F8FAFC !important;
+                    }}
+                    """
+                else:
+                    # Estado após resposta (Verde para correta, Vermelho para erro)
+                    if letra == opcao_correta:
+                        css_botoes_dinamicos += f"""
+                        div.stButton > button[key="{key_btn}"] {{
+                            background-color: #ECFDF5 !important;
+                            border: 2px solid #10B981 !important;
+                            color: #065F46 !important;
+                            border-radius: 12px !important;
+                            padding: 14px 16px !important;
+                            text-align: left !important;
+                            justify-content: flex-start !important;
+                            font-weight: 700 !important;
+                            font-size: 0.95rem !important;
+                        }}
+                        """
+                    elif letra == resposta_salva:
+                        css_botoes_dinamicos += f"""
+                        div.stButton > button[key="{key_btn}"] {{
+                            background-color: #FEF2F2 !important;
+                            border: 2px solid #EF4444 !important;
+                            color: #991B1B !important;
+                            border-radius: 12px !important;
+                            padding: 14px 16px !important;
+                            text-align: left !important;
+                            justify-content: flex-start !important;
+                            font-weight: 700 !important;
+                            font-size: 0.95rem !important;
+                        }}
+                        """
+                    else:
+                        css_botoes_dinamicos += f"""
+                        div.stButton > button[key="{key_btn}"] {{
+                            background-color: #FFFFFF !important;
+                            border: 1px solid #E2E8F0 !important;
+                            color: #94A3B8 !important;
+                            border-radius: 12px !important;
+                            padding: 14px 16px !important;
+                            text-align: left !important;
+                            justify-content: flex-start !important;
+                            font-size: 0.95rem !important;
+                            opacity: 0.7 !important;
+                        }}
+                        """
+
+            # Aplica os estilos nos botões da tela
+            st.markdown(f"<style>{css_botoes_dinamicos}</style>", unsafe_allow_html=True)
+
+            # RENDERIZA AS CAIXAS CLICÁVEIS DE ALTERNATIVAS
             for chave in sorted(alternativas.keys()):
                 letra = chave.lower()
                 texto_alt = limpar_e_formatar_texto(alternativas[chave])
-                
-                classe_css = "caixa-opcao"
-                icone = f"<b>{letra.upper()})</b>"
-                
+                key_btn = f"btn_alt_{idx}_{letra}"
+
+                prefixo_letra = f"{letra.upper()})"
                 if resposta_salva:
                     if letra == opcao_correta:
-                        classe_css += " caixa-opcao-correta"
-                        icone = f"✅ <b>{letra.upper()})</b>"
-                    elif letra == resposta_salva and resposta_salva != opcao_correta:
-                        classe_css += " caixa-opcao-errada"
-                        icone = f"❌ <b>{letra.upper()})</b>"
+                        prefixo_letra = f"☑️ {letra.upper()})"
+                    elif letra == resposta_salva:
+                        prefixo_letra = f"❌ {letra.upper()})"
 
-                st.markdown(
-                    f"""
-                    <div class="{classe_css}">
-                        <span>{icone}</span>
-                        <span>{texto_alt}</span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                label_botao = f"{prefixo_letra} {texto_alt}"
 
-                if not resposta_salva:
-                    if st.button(f"Selecionar Alternativa {letra.upper()}", key=f"btn_alt_{idx}_{letra}", use_container_width=True):
-                        st.session_state.respostas_usuario[idx] = letra
-                        st.rerun()
+                if st.button(label_botao, key=key_btn, use_container_width=True, disabled=resposta_salva is not None):
+                    st.session_state.respostas_usuario[idx] = letra
+                    st.rerun()
 
+            # FEEDBACK E EXPLICAÇÃO
             if resposta_salva:
+                st.write("")
                 if resposta_salva == opcao_correta:
                     st.success(f"✅ **Excelente!** Você acertou esta questão.")
                 else:
@@ -714,7 +752,7 @@ else:
 
     # TELA DE CONFIGURAÇÃO DO SIMULADO (ANTES DE INICIAR)
     else:
-        # CAIXA AZUL REFORMULADA (SEM "PROF. CARLOS")
+        # CAIXA AZUL REFORMULADA (APENAS "REI DOS SIMULADOS")
         st.markdown(
             f"""
             <div style="background: {header_gradient}; padding: 14px 20px; border-radius: 12px; margin-bottom: 16px; color: white; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
@@ -875,6 +913,6 @@ else:
             elif st.session_state.funcao_selecionada in ["pdf", "conteudos", "concursos"]:
                 st.info("📌 Módulo em desenvolvimento para esta etapa.")
 
-    # --- BOTÕES DE NAVEGAÇÃO NO RODAPÉ (EXCLUSIVOS NA PARTE INFERIOR) ---
+    # --- BOTÕES DE NAVEGAÇÃO APENAS NO RODAPÉ ---
     st.divider()
     renderizar_botoes_navegacao("rodape")
